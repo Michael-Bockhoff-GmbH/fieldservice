@@ -11,3 +11,4 @@ fieldservice.patches.add_site_visits_workspace_links
 fieldservice.patches.add_site_visit_settings_time_zone
 fieldservice.patches.add_calendar_tooltip_field
 fieldservice.patches.add_feature_toggles
+fieldservice.patches.fix_feature_toggle_defaults
