@@ -394,12 +394,31 @@ die App-weiten Einstellungen von Site Visit:
 |---|---|---|
 | Allgemein | Time Zone | Zeitzone des Unternehmens (Standard **Europe/Berlin**, volle IANA-Liste wie in Frappes eigenen System Settings, Sommerzeit automatisch berücksichtigt) — bewusst getrennt von der site-weiten System-Settings-Zeitzone, siehe "## Terminplanung" für den Hintergrund. |
 | Terminplanung | Calendar Tooltip Field | **Project** (Standard) oder **Sales Order** — welches Feld beim Überfahren eines geplanten Termins mit der Maus zusätzlich zur Uhrzeit angezeigt wird, in der Kalenderansicht und im Einsatzplan gleichermaßen. |
+| Funktionen | Enable Mileage Calculation | Standard **an**. Aus = Kilometer-/Entfernungsfelder und "Calculate Mileage" verschwinden vom Site Visit, keine automatische Kilometerabrechnung mehr. |
+| Funktionen | Enable Remote Visits | Standard **an**. Aus = der Haken "Remote Visit" verschwindet, jeder Einsatz gilt als vor Ort. |
+| Funktionen | Enable Photos | Standard **an**. Aus = der Bereich "Photos" verschwindet vom Site Visit. |
+| Funktionen | Enable Additional Items | Standard **an**. Aus = die Tabelle "Additional Items" (und die Einstellung "Excluded Item Groups" darunter) verschwindet vom Site Visit. |
 | Kilometer | OpenRouteService API Key | Kostenloser Key von [openrouteservice.org](https://openrouteservice.org) — ohne Key funktioniert "Kilometer berechnen" nicht. Feldtyp **Password**, daher verschlüsselt gespeichert und im Formular maskiert. |
 | Kilometer | Default Start Address | Freitext-Startpunkt, falls der Site Visit selbst keine eigene Startadresse hat. Leer = Standardadresse der Firma. |
 | Kilometer | Mileage Item | Artikel, dessen Verkaufspreis pro Kilometer als Fahrtkosten-Position im Auftrag berechnet wird. Leer = keine automatische Fahrtkosten-Abrechnung. |
 | Zusätzliche Artikel | Excluded Item Groups | Artikel aus diesen Gruppen (inkl. Untergruppen, i. d. R. die Dienstleistungs-Gruppe(n)) sind als Zusatzartikel **nicht** wählbar — alles andere schon. Leer = keine Einschränkung. |
 | Fernarbeit | Remote Visit Mode | "Hide Signature" (Unterschriftsfelder ausblenden) oder "Send Signing Link to Customer" (Link per E-Mail). |
 | Fernarbeit | Signature Required | Ohne Unterschrift nicht buchbar — außer bei Fernarbeit im Modus "Hide Signature". |
+
+Die vier **Funktionen**-Schalter blenden die zugehörigen Bereiche im Site
+Visit rein clientseitig aus (`update_feature_visibility()` in
+`site_visit.js`, mit `frm.toggle_display()`) — für Kilometer/Fernarbeit
+zusätzlich zur ohnehin schon bestehenden `depends_on`-Logik dieser Felder
+(`!doc.is_remote` usw.), nicht anstelle davon, sonst würde Frappes eigene
+`depends_on`-Auswertung ein wegen des Schalters ausgeblendetes Feld bei der
+nächsten Änderung (z. B. an `is_remote`) wieder einblenden. Serverseitig
+prüft `_mileage_billable()` (`site_visit/site_visit.py`) und
+`calculate_distance_km()` (`mileage.py`) **Enable Mileage Calculation**
+zusätzlich selbst — ausgeschaltet wird also auch dann nicht mehr
+abgerechnet bzw. berechnet, wenn jemand die Felder trotzdem befüllt hätte
+(z. B. über die API). Für Fernarbeit/Fotos/Zusätzliche Artikel reicht das
+reine Ausblenden: eine leere Tabelle bzw. ein nie gesetztes `is_remote`
+wirkt sich ohnehin nicht auf Timesheet/Auftrag aus.
 
 ## Kilometer
 

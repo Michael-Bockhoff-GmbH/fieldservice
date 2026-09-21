@@ -96,6 +96,7 @@ frappe.ui.form.on('Site Visit', {
 		frm.dashboard.clear_headline();
 		update_timer_toolbar(frm);
 		update_remote_ui(frm);
+		update_feature_visibility(frm);
 		if (frm.doc.docstatus === 0 && !frm.doc.customer_signature) {
 			frm.dashboard.set_headline_alert(__('No customer signature captured yet.'), 'orange');
 		}
@@ -104,13 +105,23 @@ frappe.ui.form.on('Site Visit', {
 				frappe.set_route('Form', 'Timesheet', frm.doc.timesheet);
 			});
 		}
-		if (frm.doc.docstatus === 0 && !frm.is_new() && frm.doc.customer && !frm.doc.is_remote) {
+		const mileage_enabled = (frm.__site_visit_settings || {}).mileage_enabled !== 0;
+		if (mileage_enabled && frm.doc.docstatus === 0 && !frm.is_new() && frm.doc.customer && !frm.doc.is_remote) {
 			frm.add_custom_button(__('Calculate Mileage'), () => calculate_mileage(frm));
 		}
 	},
 
 	is_remote(frm) {
 		update_remote_ui(frm);
+		update_feature_visibility(frm);
+	},
+
+	override_start_address(frm) {
+		update_feature_visibility(frm);
+	},
+
+	ignore_customer_default_address(frm) {
+		update_feature_visibility(frm);
 	},
 
 	// Schnelle, nicht-blockierende Vorwarnung waehrend der Eingabe - die
@@ -164,6 +175,40 @@ function debounce_address_field(field, delay = 400) {
 		clearTimeout(timer);
 		timer = setTimeout(() => original(term), delay);
 	};
+}
+
+// Site Visit Settings -> Features: blendet ganze Funktionsbereiche aus, fuer
+// Betriebe, die sie nicht brauchen (z. B. keine Kilometerabrechnung). Die
+// mileage-/is_remote-abhaengigen Felder haben bereits ihr eigenes depends_on
+// (site_visit.json) - dessen Bedingung wird hier dupliziert und mit dem
+// jeweiligen Feature-Schalter UND-verknuepft statt sie zu ersetzen: Frappes
+// eigene depends_on-Auswertung liefe sonst bei jeder Aenderung von is_remote/
+// override_start_address/ignore_customer_default_address unabhaengig von
+// dieser Funktion und wuerde ein wegen des Schalters ausgeblendetes Feld
+// wieder einblenden (deshalb auch in den jeweiligen Feld-Handlern unten
+// erneut aufgerufen, nicht nur in refresh()). Rein UI-seitig - die
+// eigentliche Business-Logik (Kilometerabrechnung ueberspringen usw.) prueft
+// dieselben Site Visit Settings-Felder serverseitig selbst.
+function update_feature_visibility(frm) {
+	const settings = frm.__site_visit_settings || {};
+	const mileage_enabled = settings.mileage_enabled !== 0;
+	const remote_enabled = settings.remote_visits_enabled !== 0;
+	const photos_enabled = settings.photos_enabled !== 0;
+	const additional_items_enabled = settings.additional_items_enabled !== 0;
+
+	frm.toggle_display('override_start_address', mileage_enabled && !frm.doc.is_remote);
+	frm.toggle_display('start_address', mileage_enabled && !frm.doc.is_remote && !!frm.doc.override_start_address);
+	frm.toggle_display('ignore_customer_default_address', mileage_enabled && !frm.doc.is_remote);
+	frm.toggle_display(
+		'customer_address_override',
+		mileage_enabled && !frm.doc.is_remote && !!frm.doc.ignore_customer_default_address
+	);
+	frm.toggle_display('distance_km', mileage_enabled && !frm.doc.is_remote);
+	frm.toggle_display('one_way_only', mileage_enabled && !!frm.doc.distance_km && !frm.doc.is_remote);
+	frm.toggle_display('section_break_remote', mileage_enabled || remote_enabled);
+	frm.toggle_display('is_remote', remote_enabled);
+	frm.toggle_display(['section_break_fotos', 'photos'], photos_enabled);
+	frm.toggle_display(['section_break_items', 'extra_items'], additional_items_enabled);
 }
 
 // Fernarbeit: Unterschrift ausblenden ODER Link zum Unterzeichnen an den

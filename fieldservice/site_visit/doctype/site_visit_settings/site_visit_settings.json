@@ -8,6 +8,12 @@
   "time_zone",
   "scheduling_section",
   "calendar_tooltip_field",
+  "features_section",
+  "mileage_enabled",
+  "remote_visits_enabled",
+  "column_break_features",
+  "photos_enabled",
+  "additional_items_enabled",
   "mileage_section",
   "ors_api_key",
   "default_start_address",
@@ -47,17 +53,56 @@
    "options": "Project\nSales Order"
   },
   {
+   "fieldname": "features_section",
+   "fieldtype": "Section Break",
+   "label": "Features"
+  },
+  {
+   "default": "1",
+   "description": "Hides the mileage/distance fields on Site Visit (Start Address, Customer Site Address, Distance) and the \"Calculate Mileage\" button, and stops billing mileage automatically. Turn off if this business doesn't bill travel distance.",
+   "fieldname": "mileage_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Mileage Calculation"
+  },
+  {
+   "default": "1",
+   "description": "Hides the \"Remote Visit\" checkbox on Site Visit and the e-signature-link workflow. Turn off if every visit is always in-person.",
+   "fieldname": "remote_visits_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Remote Visits"
+  },
+  {
+   "fieldname": "column_break_features",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Hides the Photos section on Site Visit. Turn off if visits aren't documented with photos.",
+   "fieldname": "photos_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Photos"
+  },
+  {
+   "default": "1",
+   "description": "Hides the Additional Items table on Site Visit (and the Excluded Item Groups setting below, which only applies to it). Turn off if this business only bills time, never material/hardware used on-site.",
+   "fieldname": "additional_items_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Additional Items"
+  },
+  {
    "fieldname": "mileage_section",
    "fieldtype": "Section Break",
    "label": "Mileage"
   },
   {
+   "depends_on": "eval:doc.mileage_enabled",
    "description": "Free API key from openrouteservice.org, used to calculate the driving distance for a Site Visit.",
    "fieldname": "ors_api_key",
    "fieldtype": "Password",
    "label": "OpenRouteService API Key"
   },
   {
+   "depends_on": "eval:doc.mileage_enabled",
    "description": "Free-text address, no Address record required - search-as-you-type via OpenStreetMap. Used as the mileage start point when a Site Visit does not set its own Start Address. Leave empty to use the Company's own default address instead.",
    "fieldname": "default_start_address",
    "fieldtype": "Autocomplete",
@@ -68,6 +113,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.mileage_enabled",
    "description": "Item whose Selling Price List rate is billed per kilometer when \"Calculate Mileage\" adds a line to the Site Visit's Sales Order (round trip by default, see \"One-Way Trip Only\" on the Site Visit). Leave empty to not bill mileage automatically.",
    "fieldname": "mileage_item",
    "fieldtype": "Link",
@@ -75,6 +121,7 @@
    "options": "Item"
   },
   {
+   "depends_on": "eval:doc.additional_items_enabled",
    "fieldname": "hardware_section",
    "fieldtype": "Section Break",
    "label": "Additional Items"
@@ -87,6 +134,7 @@
    "options": "Site Visit Excluded Item Group"
   },
   {
+   "depends_on": "eval:doc.remote_visits_enabled",
    "fieldname": "remote_section",
    "fieldtype": "Section Break",
    "label": "Remote Visits"

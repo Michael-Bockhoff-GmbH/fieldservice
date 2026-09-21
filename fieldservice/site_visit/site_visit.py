@@ -305,6 +305,8 @@ def _mileage_billable(doc):
 	if not doc.distance_km:
 		return False
 	settings = frappe.get_cached_doc("Site Visit Settings")
+	if not settings.mileage_enabled:
+		return False
 	return bool(settings.mileage_item)
 
 

@@ -95,6 +95,9 @@ def calculate_distance_km(doc):
 	frappe.ValidationError mit verstaendlicher Meldung bei fehlendem
 	API-Key, fehlender/nicht auffindbarer Adresse oder API-Fehler."""
 	settings = frappe.get_cached_doc("Site Visit Settings")
+	if not settings.mileage_enabled:
+		frappe.throw(_("Mileage calculation is disabled in Site Visit Settings."), title=_("Mileage"))
+
 	api_key = settings.get_password("ors_api_key", raise_exception=False)
 	if not api_key:
 		frappe.throw(
