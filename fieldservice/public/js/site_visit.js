@@ -145,14 +145,11 @@ function check_schedule_conflict(frm) {
 			name: frm.doc.name,
 		},
 		callback(r) {
-			const conflicts = r.message || [];
-			if (!conflicts.length) return;
+			const count = r.message || 0;
+			if (!count) return;
 			frappe.show_alert(
 				{
-					message: __('Scheduling conflict: {0} already has {1} overlapping visit(s).', [
-						frm.doc.employee,
-						conflicts.length,
-					]),
+					message: __('Scheduling conflict: {0} already has {1} overlapping visit(s).', [frm.doc.employee, count]),
 					indicator: 'orange',
 				},
 				7

@@ -148,6 +148,16 @@ function get_days_for_range(state) {
 
 function render(page, state) {
 	const $body = page.main.find('.dispatch-board-body');
+
+	// Ein laufender Drag (mousedown gefeuert, mouseup noch nicht) haengt
+	// seine mousemove/mouseup-Handler am document, nicht am (gleich
+	// entfernten) $track-Element - ohne dieses Aufraeumen wuerden sie beim
+	// spaeteren Loslassen noch feuern, aber auf einem laengst aus dem DOM
+	// entfernten $track rechnen (offset() liefert dann {top:0,left:0}) und
+	// so einen Site Visit mit voellig falscher Uhrzeit anlegen - z. B. wenn
+	// mitten im Ziehen das Datum/die Ansicht gewechselt wird.
+	$(document).off('mousemove.dispatch-drag').off('mouseup.dispatch-drag');
+
 	$body.html(`<div class="text-muted padding">${__('Loading...')}</div>`);
 
 	const days = get_days_for_range(state);

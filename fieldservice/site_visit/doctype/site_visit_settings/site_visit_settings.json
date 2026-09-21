@@ -90,19 +90,18 @@
    "label": "Enable Additional Items"
   },
   {
+   "depends_on": "eval:doc.mileage_enabled",
    "fieldname": "mileage_section",
    "fieldtype": "Section Break",
    "label": "Mileage"
   },
   {
-   "depends_on": "eval:doc.mileage_enabled",
    "description": "Free API key from openrouteservice.org, used to calculate the driving distance for a Site Visit.",
    "fieldname": "ors_api_key",
    "fieldtype": "Password",
    "label": "OpenRouteService API Key"
   },
   {
-   "depends_on": "eval:doc.mileage_enabled",
    "description": "Free-text address, no Address record required - search-as-you-type via OpenStreetMap. Used as the mileage start point when a Site Visit does not set its own Start Address. Leave empty to use the Company's own default address instead.",
    "fieldname": "default_start_address",
    "fieldtype": "Autocomplete",
@@ -113,7 +112,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.mileage_enabled",
    "description": "Item whose Selling Price List rate is billed per kilometer when \"Calculate Mileage\" adds a line to the Site Visit's Sales Order (round trip by default, see \"One-Way Trip Only\" on the Site Visit). Leave empty to not bill mileage automatically.",
    "fieldname": "mileage_item",
    "fieldtype": "Link",

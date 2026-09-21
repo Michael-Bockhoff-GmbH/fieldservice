@@ -193,9 +193,19 @@ def warn_schedule_conflicts(doc):
 @frappe.whitelist()
 def check_schedule_conflict(employee, scheduled_start, scheduled_end, name=None):
 	"""Client-seitiger Vorab-Check (site_visit.js) - dieselbe Abfrage wie
-	warn_schedule_conflicts() oben, nur ohne msgprint (der Aufrufer entscheidet
-	selbst, wie er die Konflikte anzeigt)."""
-	return _find_conflicts(employee, scheduled_start, scheduled_end, exclude_name=name)
+	warn_schedule_conflicts() oben, nur als reine Anzahl statt der vollen
+	Datensaetze: _find_conflicts nutzt frappe.get_all (keine Berechtigungs-
+	pruefung, absichtlich, da ein Dispatcher/Techniker die Auslastung ANDERER
+	Mitarbeiter sehen koennen muss, um ueberhaupt einen Konflikt zu erkennen).
+	Diese Methode ist aber fuer jeden angemeldeten Nutzer frei aufrufbar, mit
+	beliebigem employee/Zeitraum - anders als warn_schedule_conflicts() (nur
+	als Nebeneffekt des tatsaechlichen Speicherns eines echten, konfliktenden
+	Dokuments ausgeloest) waere die volle Konfliktliste hier ein bequemer Weg
+	fuer z. B. einen Techniker mit reinem if_owner-Zugriff, sich Kundennamen
+	und Termine anderer Mitarbeiter zusammenzusuchen, auf die er sonst keinen
+	Lesezugriff haette. Der Formular-Hinweis (site_visit.js) braucht ohnehin
+	nur die Anzahl."""
+	return len(_find_conflicts(employee, scheduled_start, scheduled_end, exclude_name=name))
 
 
 def _get_work_segments(doc):

@@ -27,14 +27,18 @@
 // mitgeliefert werden - ohne eigene "fields"-Angabe fragt Frappes
 // get_events() nur start/end/title/name ab (siehe frappe.desk.calendar.
 // get_events in frappe-core).
-let site_visit_tooltip_field_promise = null;
+// Bewusst kein gecachtes Promise ueber den Seitenaufruf hinaus: die
+// Kalenderansicht bleibt beim Navigieren innerhalb von Frappes SPA im
+// selben JS-Kontext geladen, ein einmal gecachter Wert wuerde also eine
+// zwischenzeitliche Aenderung an Site Visit Settings -> Calendar Tooltip
+// Field bis zu einem harten Browser-Reload ignorieren. frappe.db.
+// get_single_value liest ohnehin gegen Frappes eigenen (serverseitigen)
+// Document-Cache, ein erneuter Aufruf pro eingeblendetem Termin ist
+// entsprechend billig.
 function get_site_visit_tooltip_fieldname() {
-	if (!site_visit_tooltip_field_promise) {
-		site_visit_tooltip_field_promise = frappe.db
-			.get_single_value("Site Visit Settings", "calendar_tooltip_field")
-			.then((value) => (value === "Sales Order" ? "sales_order" : "project"));
-	}
-	return site_visit_tooltip_field_promise;
+	return frappe.db
+		.get_single_value("Site Visit Settings", "calendar_tooltip_field")
+		.then((value) => (value === "Sales Order" ? "sales_order" : "project"));
 }
 
 function format_site_visit_tooltip_time(event) {

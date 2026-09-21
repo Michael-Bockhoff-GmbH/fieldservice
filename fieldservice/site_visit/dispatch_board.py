@@ -46,11 +46,14 @@ def get_dispatch_board_data(start_date, end_date=None, employees=None):
 		employees = frappe.parse_json(employees) if isinstance(employees, str) else employees
 		employee_filters["name"] = ["in", employees]
 
+	settings = frappe.get_cached_doc("Site Visit Settings")
+	tooltip_field = settings.calendar_tooltip_field or "Project"
+
 	technicians = frappe.get_all(
 		"Employee", filters=employee_filters, fields=["name", "employee_name"], order_by="employee_name"
 	)
 	if not technicians:
-		return {"technicians": [], "visits": []}
+		return {"technicians": [], "visits": [], "tooltip_field": tooltip_field}
 
 	visits = frappe.get_all(
 		"Site Visit",
@@ -88,5 +91,4 @@ def get_dispatch_board_data(start_date, end_date=None, employees=None):
 				for other in rows
 			)
 
-	settings = frappe.get_cached_doc("Site Visit Settings")
-	return {"technicians": technicians, "visits": visits, "tooltip_field": settings.calendar_tooltip_field or "Project"}
+	return {"technicians": technicians, "visits": visits, "tooltip_field": tooltip_field}
