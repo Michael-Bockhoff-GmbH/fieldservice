@@ -78,6 +78,19 @@ frappe.pages['dispatch-board'].on_page_load = function (wrapper) {
 	page.main.append('<div class="dispatch-board-body"></div>');
 	render(page, state);
 
+	// Frappe haelt die Seite im Speicher: beim Zurueckkehren (z. B. aus dem
+	// neu angelegten Site Visit) laeuft on_page_load NICHT erneut, neue oder
+	// geaenderte Termine waeren erst nach einem Browser-Reload sichtbar.
+	// on_page_show (unten) rendert deshalb bei jeder Rueckkehr neu; das
+	// list_update-Ereignis haelt den Plan ausserdem live, wenn waehrenddessen
+	// jemand anderes einen Termin anlegt/aendert.
+	wrapper.dispatch_board = { page, state, first_show: true };
+	frappe.realtime.on('list_update', (data) => {
+		if (data && data.doctype === 'Site Visit' && frappe.get_route()[0] === 'dispatch-board') {
+			render(page, state);
+		}
+	});
+
 	// go_to_day(): von einer Monatszelle aus direkt in die Tagesansicht
 	// dieses Tages springen.
 	page.go_to_day = (date_str) => {
@@ -86,6 +99,17 @@ frappe.pages['dispatch-board'].on_page_load = function (wrapper) {
 		date_field.set_value(state.date);
 		view_field.set_value(state.view);
 	};
+};
+
+frappe.pages['dispatch-board'].on_page_show = function (wrapper) {
+	const board = wrapper.dispatch_board;
+	if (!board) return;
+	// Der erste Aufruf folgt direkt auf on_page_load, das schon gerendert hat.
+	if (board.first_show) {
+		board.first_show = false;
+		return;
+	}
+	render(board.page, board.state);
 };
 
 // --- Datum: bewusst ohne frappe.datetime.add_days()/add_months(), siehe

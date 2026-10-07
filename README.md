@@ -277,7 +277,7 @@ entfernt beim Deinstallieren exakt diese vier Einträge wieder (identifiziert
 
 ## Auftrag
 
-`project` ist ebenfalls Pflicht (wie `customer`/`activity_type`/`sales_order`
+`project` ist ebenfalls Pflicht (wie `activity_type`/`sales_order`
 erst beim Buchen selbst geprüft, nicht auf Feldebene – sonst wäre ein
 Entwurf mit nur laufendem Timer nicht speicherbar, siehe "Timer" unten).
 
@@ -349,7 +349,7 @@ Schliessen der Seite verloren, weil ein neues, ungespeichertes Dokument nur
 im Browser existiert.
 
 Damit ein Entwurf mit nur laufendem Timer überhaupt speicherbar ist, sind
-Kunde, Aktivitätsart, Auftrag und Endzeit **nicht auf Feldebene Pflicht** –
+Aktivitätsart, Auftrag, Startzeit und Endzeit **nicht auf Feldebene Pflicht** –
 sie werden erst beim Buchen selbst geprüft (`before_submit` in
 `site_visit/site_visit.py`), mit einer klaren Fehlermeldung, falls etwas
 fehlt. `employee` ist ebenfalls nicht Pflicht (weder im Feld noch beim
@@ -796,3 +796,13 @@ benutzte Sidebar (localStorage `fieldservice_sidebar_by_entity`) und stellt sie
 nach dem Neuladen wieder her. Der Core bleibt unverändert. Wer Timesheet
 zuletzt über „Kundeneinsätze“ geöffnet hat, bleibt dort; wer es über
 „Projects“ öffnet, bleibt in „Projects“.
+
+**Kunde ist Pflichtfeld:** `customer` ist auf Feldebene Pflicht – auch für
+Entwürfe und geplante Termine. Ein Termin ohne Kunde lässt sich nicht
+speichern. `from_time` ist dagegen beim Speichern optional (reine
+Vorausplanung); es wird erst beim Buchen verlangt.
+
+**Einsatzplan aktuell halten:** Der Einsatzplan lädt seine Daten bei jeder
+Rückkehr auf die Seite neu (`on_page_show`) und reagiert auf das
+`list_update`-Ereignis von Site Visit. Neu angelegte Termine erscheinen ohne
+Browser-Reload.
