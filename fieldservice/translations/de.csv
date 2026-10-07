@@ -151,3 +151,5 @@
 "Enable Additional Items","Zusätzliche Artikel aktivieren"
 "Hides the Additional Items table on Site Visit (and the Excluded Item Groups setting below, which only applies to it). Turn off if this business only bills time, never material/hardware used on-site.","Blendet die Tabelle ""Additional Items"" am Site Visit aus (und die Einstellung ""Excluded Item Groups"" darunter, die nur dafuer gilt). Ausschalten, wenn ausschliesslich Zeit abgerechnet wird, nie vor Ort verwendetes Material/Hardware."
 "Mileage calculation is disabled in Site Visit Settings.","Die Kilometerberechnung ist in Site Visit Settings deaktiviert."
+"Please enter a start time before submitting.","Bitte vor dem Buchen eine Startzeit eintragen."
+"Must be set before submitting - not required for a merely planned visit (see Scheduled Start)","Muss vor dem Buchen gesetzt sein - für einen nur geplanten Einsatz nicht erforderlich (siehe Scheduled Start)"

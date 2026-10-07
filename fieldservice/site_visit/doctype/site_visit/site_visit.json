@@ -170,10 +170,10 @@
    "reqd": 1
   },
   {
+   "description": "Must be set before submitting - not required for a merely planned visit (see Scheduled Start)",
    "fieldname": "from_time",
    "fieldtype": "Datetime",
-   "label": "From Time",
-   "reqd": 1
+   "label": "From Time"
   },
   {
    "description": "Must be set before submitting - not required yet when saving as a draft (e.g. via the timer)",
