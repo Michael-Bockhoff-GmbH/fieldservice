@@ -551,24 +551,29 @@ das ist noch nicht gebaut.
 
 ### Zeitzone
 
-Frappes eingebaute Kalenderansicht rechnet Termine standardmäßig zwischen
-der site-weiten **System Settings → Time Zone** und der Zeitzone des
-Nutzers um (`convert_to_user_tz`, Frappe-Kern). Stimmt System Settings
-nicht mit der tatsächlichen Zeitzone des Unternehmens überein — am
-18.09.2026 stand sie auf diesem Server auf "Asia/Kolkata" statt
-"Europe/Berlin", vermutlich ein nie angepasster Installations-Standard —,
-verschieben sich Termine im Kalender um Stunden oder fallen ganz aus dem
-sichtbaren Tag heraus. Da diese App nicht die site-weite System-Settings-
-Zeitzone ändern will (betrifft die ganze Site, nicht nur Site Visit),
-schaltet `site_visit_calendar.js` diese Umrechnung für Site Visit gezielt
-ab (`field_map.convertToUserTz = true`, siehe Kommentar dort) — Termine
-werden als reiner Klartext-Zeitpunkt angezeigt, genau wie im Formular und
-im Dispatch Board, unabhängig davon, was in System Settings steht.
+Frappe speichert Datetime-Werte in der **System-Zeitzone** (System Settings →
+Time Zone) und zeigt sie in der **Zeitzone des Benutzers** an (User → Time
+Zone). Die Datetime-Felder im Formular rechnen immer so um. Kalenderansicht
+und Einsatzplan rechnen deshalb genauso (`convert_to_user_tz` in
+`site_visit_calendar.js`, `to_local()`/`to_stored()` in `dispatch_board.js`):
+überall steht dieselbe Uhrzeit, und ein per Ziehen im Einsatzplan angelegter
+Termin übernimmt Start und Ende im Formular unverändert.
+
+Eine frühere Fassung schaltete die Umrechnung im Kalender und im Einsatzplan ab
+und zeigte rohe Werte. Das passte nicht zum Formular, das immer umrechnet —
+Termine erschienen dort um Stunden verschoben.
+
+**Wichtig:** Das stimmt nur, wenn System Settings → Time Zone sinnvoll gesetzt
+ist. Auf diesem Server steht sie auf "Asia/Kolkata", Benutzer *Administrator*
+auf "Europe/Berlin". Die Anzeige ist dadurch konsistent, aber alle
+gespeicherten Zeitstempel der Site liegen in Kolkata-Zeit. Sauberer wäre
+"Europe/Berlin" in System Settings — das betrifft aber die ganze Site und
+verschiebt bereits gespeicherte Werte, daher nicht ohne Absprache.
 
 **Site Visit Settings → Time Zone** (Standard **Europe/Berlin**, volle
 IANA-Zeitzonenliste wie in Frappes eigenen System Settings, siehe
-`get_timezone_options()` in `site_visit_settings.py`) ändert an dieser
-Kalenderanzeige nichts direkt mehr — sie ist die für diese App
+`get_timezone_options()` in `site_visit_settings.py`) ändert an der Anzeige
+in Formular, Kalender und Einsatzplan nichts — sie ist die für diese App
 maßgebliche, korrekt vorbelegte Zeitzone, unabhängig von System Settings,
 und der Anker für eine spätere Office-365/Outlook-Anbindung (die für
 Outlooks Kalender-API einen echten Zeitzonennamen braucht). Berücksichtigt

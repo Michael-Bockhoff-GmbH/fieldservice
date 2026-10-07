@@ -260,15 +260,17 @@ function render_ruler(days) {
 }
 
 function render_block(visit, days, tooltip_field) {
-	const day_index = days.indexOf((visit.scheduled_start || '').slice(0, 10));
+	const start_local = to_local(visit.scheduled_start);
+	const end_local = to_local(visit.scheduled_end);
+	const day_index = days.indexOf((start_local || '').slice(0, 10));
 	if (day_index === -1) return ''; // ueber Mitternacht hinausreichende Termine werden hier nicht dargestellt
 
-	const start_px = day_index * DAY_WIDTH + time_to_px(visit.scheduled_start);
-	const end_px = day_index * DAY_WIDTH + time_to_px(visit.scheduled_end);
+	const start_px = day_index * DAY_WIDTH + time_to_px(start_local);
+	const end_px = day_index * DAY_WIDTH + time_to_px(end_local);
 	const width = Math.max(end_px - start_px, 8);
 	const status_class = visit.docstatus === 1 ? 'dispatch-block-submitted' : 'dispatch-block-draft';
 	const conflict_class = visit.has_conflict ? 'dispatch-block-conflict' : '';
-	const time_label = frappe.datetime.str_to_user(visit.scheduled_start).split(' ')[1] || '';
+	const time_label = frappe.datetime.str_to_user(start_local).split(' ')[1] || '';
 	const lines = [`${visit.customer_name || visit.customer || ''} (${time_label})`];
 	const extra_value = tooltip_field === 'Sales Order' ? visit.sales_order : visit.project;
 	if (extra_value) {
@@ -281,6 +283,18 @@ function render_block(visit, days, tooltip_field) {
 			title="${frappe.utils.escape_html(lines.join('\n'))}">
 			${frappe.utils.escape_html(visit.customer_name || visit.customer || visit.name)}
 		</div>`;
+}
+
+// Frappe speichert Datetime-Werte in der System-Zeitzone (System Settings)
+// und zeigt sie im Formular in der Zeitzone des Benutzers an. Der Plan muss
+// genauso rechnen wie das Formular - sonst steht dort eine andere Uhrzeit
+// als hier. to_local(): gespeichert -> angezeigt, to_stored(): umgekehrt.
+function to_local(datetime_str) {
+	return datetime_str ? frappe.datetime.convert_to_user_tz(datetime_str) : datetime_str;
+}
+
+function to_stored(datetime_str) {
+	return frappe.datetime.convert_to_system_tz(datetime_str, true);
 }
 
 function time_to_px(datetime_str) {
@@ -378,8 +392,8 @@ function create_new_visit(employee, day, from_hour, to_hour) {
 	};
 	frappe.new_doc('Site Visit', {
 		employee,
-		scheduled_start: to_time_str(from_hour),
-		scheduled_end: to_time_str(to_hour),
+		scheduled_start: to_stored(to_time_str(from_hour)),
+		scheduled_end: to_stored(to_time_str(to_hour)),
 	});
 }
 
@@ -392,7 +406,7 @@ function build_month_html(data, days) {
 
 	const visits_by_employee_day = {};
 	(data.visits || []).forEach((v) => {
-		const day = (v.scheduled_start || '').slice(0, 10);
+		const day = (to_local(v.scheduled_start) || '').slice(0, 10);
 		const key = `${v.employee}::${day}`;
 		(visits_by_employee_day[key] = visits_by_employee_day[key] || []).push(v);
 	});

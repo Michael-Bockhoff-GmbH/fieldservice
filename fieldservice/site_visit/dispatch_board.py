@@ -38,8 +38,13 @@ def get_dispatch_board_data(start_date, end_date=None, employees=None):
 
 	from frappe.utils import add_to_date, get_datetime
 
-	range_start = get_datetime(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
-	range_end = add_to_date(get_datetime(end_date or start_date).replace(hour=0, minute=0, second=0, microsecond=0), days=1)
+	# Je einen Tag Puffer vor/nach dem Zeitraum: gespeichert wird in der
+	# System-Zeitzone (System Settings), angezeigt in der Zeitzone des
+	# Benutzers - die Seite rechnet selbst um (dispatch_board.js, to_local())
+	# und ordnet die Termine dem richtigen Tag zu. Ohne Puffer fielen Termine
+	# am Rand des Zeitraums je nach Zeitzonenabstand heraus.
+	range_start = add_to_date(get_datetime(start_date).replace(hour=0, minute=0, second=0, microsecond=0), days=-1)
+	range_end = add_to_date(get_datetime(end_date or start_date).replace(hour=0, minute=0, second=0, microsecond=0), days=2)
 
 	employee_filters = {"status": "Active"}
 	if employees:

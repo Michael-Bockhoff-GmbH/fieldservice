@@ -3,25 +3,20 @@
 // festhalten (siehe site_visit.json). Ein Site Visit ohne scheduled_start
 // taucht hier einfach nicht auf - reine Vorausplanung ist optional.
 //
-// convertToUserTz: true schaltet Frappes eingebaute Zeitzonen-Umrechnung
-// ab (frappe/public/js/frappe/views/calendar/calendar.js -> prepare_events:
-// "if (!me.field_map.convertToUserTz) d.convertToUserTz = 1;" - ohne diesen
-// Wert hier wird IMMER umgerechnet). Diese Umrechnung geht von System
-// Settings -> Time Zone aus, nicht von Site Visit Settings -> Time Zone -
-// stimmt Erstere nicht mit der tatsaechlichen Zeitzone des Unternehmens
-// ueberein, verschiebt sich ein Termin im Kalender um Stunden oder faellt
-// sogar aus dem sichtbaren Tag heraus (genau so am 18.09.2026 beobachtet:
-// System Settings stand auf "Asia/Kolkata"). Site Visit Settings -> Time
-// Zone aendert daran bewusst nichts direkt - stattdessen wird hier einfach
-// gar nicht erst umgerechnet, scheduled_start/scheduled_end werden als
-// reiner Klartext-Zeitpunkt angezeigt, genau wie im Formular und im
-// Dispatch Board (site_visit/page/dispatch_board/) - unabhaengig davon,
-// was in System Settings steht.
+// convertToUserTz: false (nicht weglassen - siehe frappe/public/js/frappe/
+// views/calendar/calendar.js -> prepare_events: "if (!me.field_map.
+// convertToUserTz) d.convertToUserTz = 1;") laesst Frappes eingebaute
+// Zeitzonen-Umrechnung AN: gespeichert wird in der System-Zeitzone, angezeigt
+// in der Zeitzone des Benutzers - exakt wie die Datetime-Felder im Formular
+// und der Einsatzplan (site_visit/page/dispatch_board/, to_local()). So steht
+// ueberall dieselbe Uhrzeit. (Eine fruehere Fassung schaltete die Umrechnung
+// ab; das passte dann nicht mehr zum Formular, das Frappe immer umrechnet.)
+//
 // Eigener Hover-Tooltip (eventDidMount, siehe frappe.views.Calendar.
 // setup_options/get_args: das "options"-Objekt hier wird per $.extend in
 // Frappes cal_options gemischt und landet direkt bei FullCalendar) statt
 // dem eingebauten Browser-Tooltip von FullCalendar - zeigt zusaetzlich zur
-// (dank convertToUserTz:true oben bereits korrekten) Uhrzeit den Auftrag
+// (wie im Formular umgerechneten) Uhrzeit den Auftrag
 // oder das Projekt an, je nach Site Visit Settings -> Calendar Tooltip
 // Field. "fields" unten sorgt dafuer, dass sales_order/project ueberhaupt
 // mitgeliefert werden - ohne eigene "fields"-Angabe fragt Frappes
@@ -54,7 +49,7 @@ frappe.views.calendar["Site Visit"] = {
 		id: "name",
 		title: "customer_name",
 		allDay: "allDay",
-		convertToUserTz: true,
+		convertToUserTz: false,
 	},
 	fields: ["name", "scheduled_start", "scheduled_end", "customer_name", "docstatus", "sales_order", "project"],
 	filters: [
