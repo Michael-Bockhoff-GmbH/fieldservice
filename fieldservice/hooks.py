@@ -37,6 +37,8 @@ add_to_apps_screen = [
 # restlos mit der App, sind versionierbar, unterliegen nicht dem
 # Client-Script-Cache im Browser.
 # ---------------------------------------------------------------------------
+app_include_js = "/assets/fieldservice/js/sidebar_memory.js"
+
 doctype_js = {
 	"Site Visit": "public/js/site_visit.js",
 	"Site Visit Settings": "public/js/site_visit_settings.js",

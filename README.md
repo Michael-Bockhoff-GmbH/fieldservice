@@ -65,7 +65,7 @@ fieldservice/
     ├── translations/
     │   └── de.csv               # Deutsche Übersetzungen fürs Modul "Site Visit" (siehe "Sprache")
     ├── workspace_sidebar/
-    │   └── site_visits.json     # Eigene Sidebar (Site Visit + Timesheet, kein Home-Link)
+    │   └── site_visits.json     # Eigene Sidebar (Site Visit, Einsatzplan, Timesheet, Einstellungen; kein Home-Link)
     ├── site_visit/            # Modul "Site Visit"
     │   ├── doctype/
     │   │   ├── site_visit/          # Haupt-Doctype (submittable) + site_visit_calendar.js
@@ -777,3 +777,17 @@ User/Accounts Manager/Projects User (nur lesen).
   "Terminplanung" oben) - `scheduled_start`/`scheduled_end` sind als
   Andockpunkt für einen künftigen Sync-Job über die Microsoft-Graph-API
   gedacht, aber noch nicht angebunden.
+
+## Sidebar „Kundeneinsätze“
+
+Die eigene Sidebar enthält Site Visit, Einsatzplan (Dispatch Board),
+Timesheet und darunter den Abschnitt **Einstellungen** mit *Site Visit
+Settings*.
+
+**Timesheet in zwei Sidebars:** „Timesheet“ steht auch in der ERPNext-Sidebar
+„Projects“. Beim Neuladen der Seite wählte Frappe dann immer „Projects“.
+`public/js/sidebar_memory.js` merkt sich deshalb pro Eintrag die zuletzt
+benutzte Sidebar (localStorage `fieldservice_sidebar_by_entity`) und stellt sie
+nach dem Neuladen wieder her. Der Core bleibt unverändert. Wer Timesheet
+zuletzt über „Kundeneinsätze“ geöffnet hat, bleibt dort; wer es über
+„Projects“ öffnet, bleibt in „Projects“.
