@@ -44,8 +44,8 @@ def before_submit(doc, method=None):
 	opened it" entsteht (gleiche Begruendung wie
 	fieldservice.zeit_projekt.sales_order.before_submit).
 
-	customer/project/activity_type/sales_order/from_time/to_time sind
-	absichtlich nicht mehr reqd (from_time: reine Vorausplanung per
+	project/activity_type/sales_order/from_time/to_time sind
+	absichtlich nicht mehr reqd (customer ist dagegen wieder Pflicht, auch fuer Entwuerfe) (from_time: reine Vorausplanung per
 	scheduled_start/scheduled_end braucht keine Ist-Zeit) im Feld (siehe site_visit.json) - ein Entwurf mit nur laufendem
 	Timer (from_time gesetzt, "Start Timer" speichert sofort, siehe
 	site_visit.js) waere sonst gar nicht speicherbar. Deshalb hier explizit
