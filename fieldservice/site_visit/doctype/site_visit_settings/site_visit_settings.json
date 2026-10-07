@@ -130,7 +130,7 @@
    "description": "No item can be added as an Additional Item on a Site Visit at all. Use this instead of selecting the root Item Group below.",
    "fieldname": "exclude_all_item_groups",
    "fieldtype": "Check",
-   "label": "Exclude all Item Groups"
+   "label": "Disable Item Selection"
   },
   {
    "depends_on": "eval:!doc.exclude_all_item_groups",

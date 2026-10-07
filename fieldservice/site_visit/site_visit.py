@@ -374,7 +374,7 @@ def item_query_extra_items(doctype, txt, searchfield, start, page_len, filters):
 	Dienstleistung statt benoetigten Materials erfasst wird. In den
 	meisten Faellen reicht es, genau die Dienstleistungs-Artikelgruppe(n)
 	hier einzutragen - alles andere (Hardware, Verbrauchsmaterial, ...)
-	bleibt waehlbar. Leere Einstellung = keine Einschraenkung; "Exclude all Item Groups"
+	bleibt waehlbar. Leere Einstellung = keine Einschraenkung; "Disable Item Selection"
 	angehakt = gar kein Artikel waehlbar. Nutzt
 	ERPNexts eigene item_query weiter (respektiert disabled/is_sales_item
 	usw.), ergaenzt nur den Gruppenfilter."""
