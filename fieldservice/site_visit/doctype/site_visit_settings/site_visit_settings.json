@@ -20,6 +20,7 @@
   "column_break_mileage",
   "mileage_item",
   "hardware_section",
+  "exclude_all_item_groups",
   "excluded_item_groups",
   "remote_section",
   "remote_mode",
@@ -125,6 +126,14 @@
    "label": "Additional Items"
   },
   {
+   "default": "0",
+   "description": "No item can be added as an Additional Item on a Site Visit at all. Use this instead of selecting the root Item Group below.",
+   "fieldname": "exclude_all_item_groups",
+   "fieldtype": "Check",
+   "label": "Exclude all Item Groups"
+  },
+  {
+   "depends_on": "eval:!doc.exclude_all_item_groups",
    "description": "Items from these Item Groups (and their sub-groups) cannot be added as an Additional Item on a Site Visit - everything else is allowed. In most cases, excluding your services/labor group(s) here is enough. Leave empty for no restriction.",
    "fieldname": "excluded_item_groups",
    "fieldtype": "Table MultiSelect",

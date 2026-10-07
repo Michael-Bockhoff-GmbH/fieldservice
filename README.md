@@ -402,6 +402,7 @@ die App-weiten Einstellungen von Site Visit:
 | Kilometer | Default Start Address | Freitext-Startpunkt, falls der Site Visit selbst keine eigene Startadresse hat. Leer = Standardadresse der Firma. |
 | Kilometer | Mileage Item | Artikel, dessen Verkaufspreis pro Kilometer als Fahrtkosten-Position im Auftrag berechnet wird. Leer = keine automatische Fahrtkosten-Abrechnung. |
 | Zusätzliche Artikel | Excluded Item Groups | Artikel aus diesen Gruppen (inkl. Untergruppen, i. d. R. die Dienstleistungs-Gruppe(n)) sind als Zusatzartikel **nicht** wählbar — alles andere schon. Leer = keine Einschränkung. |
+| Zusätzliche Artikel | Exclude all Item Groups | Standard **aus**. An = es ist überhaupt kein Zusatzartikel wählbar, die Liste der ausgeschlossenen Gruppen ist dann ausgeblendet. Die oberste Artikelgruppe ("Alle Artikelgruppen") lässt sich in der Liste nicht mehr auswählen (sie würde ohnehin alles ausschließen) und wird beim Speichern auch aus per API/Import gesetzten Listen entfernt. |
 | Fernarbeit | Remote Visit Mode | "Hide Signature" (Unterschriftsfelder ausblenden) oder "Send Signing Link to Customer" (Link per E-Mail). |
 | Fernarbeit | Signature Required | Ohne Unterschrift nicht buchbar — außer bei Fernarbeit im Modus "Hide Signature". |
 

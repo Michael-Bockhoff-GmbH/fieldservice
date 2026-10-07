@@ -12,6 +12,13 @@ frappe.ui.form.on('Site Visit Settings', {
 			debounce_address_field(field);
 		}
 
+		// Die oberste Artikelgruppe ("Alle Artikelgruppen") waere als
+		// Ausschluss sinnlos - sie schliesst ueber ihre Untergruppen jeden
+		// Artikel aus. Dafuer gibt es die Checkbox "Exclude all Item Groups".
+		const hide_root_group = () => ({ filters: { parent_item_group: ['is', 'set'] } });
+		frm.set_query('excluded_item_groups', hide_root_group);
+		frm.set_query('item_group', 'excluded_item_groups', hide_root_group);
+
 		// Dieselbe Zeitzonenliste wie Frappes eigene System Settings -> "Time
 		// Zone" (siehe get_timezone_options() in site_visit_settings.py) - das
 		// Select-Feld hat bewusst keine statische options-Liste im DocType,

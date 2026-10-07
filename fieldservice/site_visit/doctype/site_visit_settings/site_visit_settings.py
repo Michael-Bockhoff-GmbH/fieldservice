@@ -3,7 +3,13 @@ from frappe.model.document import Document
 
 
 class SiteVisitSettings(Document):
-	pass
+	def validate(self):
+		# Die oberste Artikelgruppe (z. B. "Alle Artikelgruppen") schliesst
+		# ueber ihre Untergruppen JEDEN Artikel aus - dafuer gibt es die
+		# Checkbox exclude_all_item_groups. Das Auswahlfeld blendet sie schon
+		# aus (site_visit_settings.js), hier zusaetzlich fuer API/Import.
+		root_groups = set(frappe.get_all("Item Group", filters={"parent_item_group": ["in", ["", None]]}, pluck="name"))
+		self.excluded_item_groups = [row for row in self.excluded_item_groups if row.item_group not in root_groups]
 
 
 @frappe.whitelist()

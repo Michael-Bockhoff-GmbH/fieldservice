@@ -374,13 +374,16 @@ def item_query_extra_items(doctype, txt, searchfield, start, page_len, filters):
 	Dienstleistung statt benoetigten Materials erfasst wird. In den
 	meisten Faellen reicht es, genau die Dienstleistungs-Artikelgruppe(n)
 	hier einzutragen - alles andere (Hardware, Verbrauchsmaterial, ...)
-	bleibt waehlbar. Leere Einstellung = keine Einschraenkung. Nutzt
+	bleibt waehlbar. Leere Einstellung = keine Einschraenkung; "Exclude all Item Groups"
+	angehakt = gar kein Artikel waehlbar. Nutzt
 	ERPNexts eigene item_query weiter (respektiert disabled/is_sales_item
 	usw.), ergaenzt nur den Gruppenfilter."""
 	from erpnext.controllers.queries import item_query
 	from frappe.utils.nestedset import get_descendants_of
 
 	settings = frappe.get_cached_doc("Site Visit Settings")
+	if settings.exclude_all_item_groups:
+		return []
 	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
 	excluded_groups = [row.item_group for row in settings.excluded_item_groups]
 	if excluded_groups:
