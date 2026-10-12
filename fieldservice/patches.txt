@@ -14,3 +14,4 @@ fieldservice.patches.add_feature_toggles
 fieldservice.patches.fix_feature_toggle_defaults
 fieldservice.patches.remove_excluded_item_groups
 fieldservice.patches.add_time_assignment_shortcut
+fieldservice.patches.add_sales_order_item_assigned_time_flag

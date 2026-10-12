@@ -141,6 +141,7 @@ def assign_entries(entries, sales_order=None, billable=None):
 			parents.setdefault(parent, set()).add(name)
 
 	changed = 0
+	affected_orders = {order.name} if order else set()
 	for parent, names in parents.items():
 		ts = frappe.get_doc("Timesheet", parent)
 		if ts.docstatus == 2:
@@ -155,6 +156,8 @@ def assign_entries(entries, sales_order=None, billable=None):
 				frappe.throw(_("Time entry in {0} was already invoiced on {1}.").format(parent, row.sales_invoice))
 			if row.project:
 				old_projects.add(row.project)
+			if row.custom_sales_order:
+				affected_orders.add(row.custom_sales_order)
 			if order:
 				row.custom_sales_order = order.name
 				if order.project:
@@ -183,4 +186,105 @@ def assign_entries(entries, sales_order=None, billable=None):
 			if frappe.db.exists("Project", project):
 				frappe.get_doc("Project", project).update_project()
 
+	# Auftragszeilen nachziehen: neuer Auftrag und alle, aus denen Zeiten
+	# weggenommen wurden (Zuordnung aufgehoben oder auf einen anderen Auftrag
+	# gelegt, oder abrechenbar geaendert)
+	for so_name in sorted(affected_orders):
+		sync_order_time_lines(so_name)
+
 	return changed
+
+
+def sync_order_time_lines(so_name):
+	"""Gleicht die Dienstleistungs-Zeilen eines Auftrags mit den ihm
+	zugeordneten, abrechenbaren Zeiten ab: pro Dienstleistungsartikel eine
+	Zeile (custom_fs_assigned_time) mit der Summe der Stunden - angelegt,
+	angepasst oder entfernt, wenn nichts mehr zugeordnet ist.
+
+	Zeiten aus Site-Visit-Zeitblaettern bleiben aussen vor: fuer die steht
+	schon die Zeit-Position des jeweiligen Site Visit im Auftrag (siehe
+	_sync_sales_order in site_visit.py) - sonst waere dieselbe Zeit doppelt
+	berechnet. Aktivitaetsarten ohne Dienstleistungsartikel koennen nicht
+	abgerechnet werden und werden mit einem Hinweis uebersprungen."""
+	from erpnext.controllers.accounts_controller import update_child_qty_rate
+
+	from fieldservice.site_visit.site_visit import _as_administrator, _fallback_warehouse, _service_item_line
+
+	so = frappe.get_doc("Sales Order", so_name)
+	if so.docstatus == 2 or so.status in CLOSED_ORDER_STATUS:
+		return
+
+	rows = frappe.db.sql(
+		"""select tsd.activity_type, sum(if(tsd.billing_hours, tsd.billing_hours, tsd.hours)) as hours
+		from `tabTimesheet Detail` tsd
+		join `tabTimesheet` ts on ts.name = tsd.parent
+		where ts.docstatus < 2 and tsd.custom_sales_order = %s and tsd.is_billable = 1
+			and ts.name not in (select timesheet from `tabSite Visit` where ifnull(timesheet, '') != '')
+		group by tsd.activity_type""",
+		so_name,
+		as_dict=True,
+	)
+
+	needed = {}
+	skipped = []
+	for row in rows:
+		item_code = frappe.get_cached_value("Activity Type", row.activity_type, "custom_dienstleistungsartikel")
+		if not item_code:
+			skipped.append(row.activity_type)
+			continue
+		if item_code in needed:
+			needed[item_code]["qty"] = round(needed[item_code]["qty"] + flt(row.hours), 2)
+		else:
+			needed[item_code] = _service_item_line(row.activity_type, flt(row.hours))
+
+	if skipped:
+		frappe.msgprint(
+			_("No Dienstleistungsartikel configured for Activity Type {0} - its time was not added to {1}.").format(
+				", ".join(skipped), so_name
+			),
+			indicator="orange",
+			alert=True,
+		)
+
+	managed = {row.item_code: row for row in so.items if row.get("custom_fs_assigned_time")}
+	names_before = {row.name for row in so.items}
+
+	changed = False
+	trans_items = []
+	for row in so.items:
+		if row.get("custom_fs_assigned_time"):
+			line = needed.get(row.item_code)
+			if not line:
+				changed = True  # nichts mehr zugeordnet -> Zeile weglassen (= entfernen)
+				continue
+			item = row.as_dict()
+			if flt(item.qty) != flt(line["qty"]):
+				item["qty"] = line["qty"]
+				changed = True
+			item["docname"] = row.name
+			trans_items.append(item)
+		else:
+			item = row.as_dict()
+			item["docname"] = row.name
+			trans_items.append(item)
+
+	new_items = [line for item_code, line in needed.items() if item_code not in managed]
+	for line in new_items:
+		line["warehouse"] = _fallback_warehouse(so, line["item_code"])
+		trans_items.append(line)
+		changed = True
+
+	if not changed:
+		return
+
+	with _as_administrator():
+		update_child_qty_rate("Sales Order", frappe.as_json(trans_items), so.name)
+
+	if new_items:
+		so.reload()
+		fresh = [row for row in so.items if row.name not in names_before]
+		for line in new_items:
+			match = next((row for row in fresh if row.item_code == line["item_code"]), None)
+			if match:
+				frappe.db.set_value("Sales Order Item", match.name, "custom_fs_assigned_time", 1)
+				fresh.remove(match)

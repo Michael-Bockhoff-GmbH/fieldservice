@@ -565,23 +565,27 @@ def _create_sales_order(doc, segments):
 def _get_time_item(doc, segments):
 	"""Dienstleistungsartikel-Position fuer die gearbeitete Zeit (siehe
 	_create_sales_order) - Menge in Stunden aus den bereits um Pausen
-	bereinigten Arbeitsabschnitten (segments, siehe _get_work_segments).
+	bereinigten Arbeitsabschnitten (segments, siehe _get_work_segments)."""
+	hours = sum((segment_to - segment_from).total_seconds() for segment_from, segment_to in segments) / 3600
+	return _service_item_line(doc.activity_type, hours)
+
+
+def _service_item_line(activity_type_name, hours):
+	"""Dienstleistungsartikel-Zeile (Artikel der Aktivitaetsart x Stunden).
 	Preisfindung wie beim Rechnungsimport in
 	zeit_projekt/public/js/sales_invoice.js: zuerst der Verkaufspreis des
 	Artikels, sonst der Standard-Stundensatz der Aktivitaetsart. Ohne
 	konfigurierten Dienstleistungsartikel oder ohne ermittelbaren Preis
 	wird abgebrochen, statt eine Position ohne (oder mit falschem) Preis
-	anzulegen."""
-	activity_type = frappe.get_cached_doc("Activity Type", doc.activity_type)
+	anzulegen. Auch von der Zeitzuordnung (time_assignment.py) genutzt."""
+	activity_type = frappe.get_cached_doc("Activity Type", activity_type_name)
 	if not activity_type.custom_dienstleistungsartikel:
 		frappe.throw(
 			_(
 				"Activity Type {0} has no Dienstleistungsartikel configured - required to create a "
 				"Sales Order automatically."
-			).format(doc.activity_type)
+			).format(activity_type_name)
 		)
-
-	hours = sum((segment_to - segment_from).total_seconds() for segment_from, segment_to in segments) / 3600
 
 	item = frappe.get_cached_doc("Item", activity_type.custom_dienstleistungsartikel)
 	price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
@@ -593,7 +597,7 @@ def _get_time_item(doc, segments):
 	if not rate:
 		frappe.throw(
 			_("No price found for {0}, and Activity Type {1} has no Default Billing Rate set.").format(
-				item.name, doc.activity_type
+				item.name, activity_type_name
 			)
 		)
 

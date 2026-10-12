@@ -49,6 +49,23 @@ CUSTOM_FIELDS = {
 	# hat. Wird von site_visit/site_visit.py beim Anlegen des Timesheets
 	# gesetzt (siehe _get_work_segments/before_submit dort) und von
 	# zeit_projekt/timesheet_import.py gelesen.
+	# Markiert die Auftragszeile, die die Zeitzuordnung (site_visit/
+	# time_assignment.py) fuer eine Dienstleistung verwaltet - pro Auftrag und
+	# Artikel hoechstens eine. So lassen sich diese Zeilen von Hand angelegten
+	# und von den Site-Visit-Zeit-Positionen (time_sales_order_item) trennen.
+	"Sales Order Item": [
+		{
+			"fieldname": "custom_fs_assigned_time",
+			"label": "Time from Time Assignment",
+			"fieldtype": "Check",
+			"insert_after": "item_code",
+			"hidden": 1,
+			"read_only": 1,
+			"no_copy": 1,
+			"print_hide": 1,
+			"module": ZEIT_PROJEKT_MODULE,
+		},
+	],
 	"Timesheet Detail": [
 		{
 			"fieldname": "custom_sales_order",
