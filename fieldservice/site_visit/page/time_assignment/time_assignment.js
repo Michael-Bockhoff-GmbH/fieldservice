@@ -4,12 +4,11 @@
 // Einsatzplans (dispatch_board): der Einsatzplan plant Termine, hier werden
 // bereits erfasste Zeiten verteilt.
 //
-// Bedienung: Karte anklicken waehlt sie (mehrfach moeglich), ziehen legt die
-// gewaehlten Karten auf ein Ziel. Wird eine nicht gewaehlte Karte gezogen,
-// zaehlt nur diese eine. Ziele: ein Auftrag (zuordnen) oder die Liste links
-// (Zuordnung aufheben). Der Haken "Nicht abrechenbar" in der Kopfzeile gilt
-// fuer alles, was gerade auf einen Auftrag gezogen wird: die Zeit wird dem
-// Auftrag zugeordnet, aber nicht abgerechnet.
+// Bedienung: Karte ziehen legt sie auf einen Auftrag (zuordnen) oder zurueck in
+// die linke Liste (Zuordnung aufheben). Strg/Cmd-Klick waehlt mehrere Karten,
+// die dann zusammen gezogen werden. Ein einfacher Klick oeffnet ein Popup mit
+// den Details und dem Haken "Nicht abrechenbar" - die Zuordnung bleibt dabei,
+// nur der Abrechenbar-Status aendert sich.
 
 frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
@@ -23,7 +22,6 @@ frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 		to_date: frappe.datetime.get_today(),
 		customer: null,
 		project: null,
-		not_billable: 0,
 		selected: new Set(),
 		data: { entries: [], orders: [], assigned: [] },
 	};
@@ -33,15 +31,6 @@ frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 	const to_field = make_field({ fieldname: 'to_date', label: __('To Date'), fieldtype: 'Date', default: state.to_date });
 	const customer_field = make_field({ fieldname: 'customer', label: __('Customer'), fieldtype: 'Link', options: 'Customer' });
 	const project_field = make_field({ fieldname: 'project', label: __('Project'), fieldtype: 'Link', options: 'Project' });
-	// Gilt fuer die naechsten Zuordnungen, loest selbst kein Neuladen aus
-	const not_billable_field = page.add_field({
-		fieldname: 'not_billable',
-		label: __('Not billable'),
-		fieldtype: 'Check',
-		change() {
-			state.not_billable = cint(not_billable_field.get_value());
-		},
-	});
 	page.__fields = { from_field, to_field, customer_field, project_field };
 
 	page.add_inner_button(__('Refresh'), () => reload(page, state));
@@ -145,11 +134,15 @@ function render(page, state) {
 function wire_dnd(page, state, $root) {
 	let dragged = [];
 
-	$root.find('.ta-card').on('click', function () {
+	$root.find('.ta-card').on('click', function (e) {
 		const name = $(this).data('name');
-		if (state.selected.has(name)) state.selected.delete(name);
-		else state.selected.add(name);
-		$(this).toggleClass('ta-selected', state.selected.has(name));
+		if (e.ctrlKey || e.metaKey) {
+			if (state.selected.has(name)) state.selected.delete(name);
+			else state.selected.add(name);
+			$(this).toggleClass('ta-selected', state.selected.has(name));
+			return;
+		}
+		open_entry_dialog(page, state, name);
 	});
 
 	$root.find('.ta-card').on('dragstart', function (e) {
@@ -176,10 +169,7 @@ function wire_dnd(page, state, $root) {
 		if (!names.length) return;
 
 		const args = { entries: names };
-		if (kind === 'order') {
-			args.sales_order = $(this).data('order');
-			args.billable = state.not_billable ? 0 : 1;
-		}
+		if (kind === 'order') args.sales_order = $(this).data('order');
 
 		frappe.call({
 			method: 'fieldservice.site_visit.time_assignment.assign_entries',
@@ -191,4 +181,51 @@ function wire_dnd(page, state, $root) {
 			},
 		});
 	});
+}
+
+// Popup zu einem Zeiteintrag: Details und der Haken "Nicht abrechenbar".
+function open_entry_dialog(page, state, name) {
+	const entry = state.data.entries.concat(state.data.assigned).find((e) => e.name === name);
+	if (!entry) return;
+	const start = frappe.datetime.str_to_user(frappe.datetime.convert_to_user_tz(entry.from_time));
+	const locked = !!entry.sales_invoice;
+
+	const dialog = new frappe.ui.Dialog({
+		title: __('Time Entry'),
+		fields: [
+			{
+				fieldtype: 'HTML',
+				fieldname: 'info',
+				options: `<div>
+					<div><b>${frappe.utils.escape_html(entry.employee_name || '')}</b></div>
+					<div class="text-muted">${start} &middot; ${flt(entry.hours, 2)} h
+						${entry.activity_type ? '&middot; ' + frappe.utils.escape_html(entry.activity_type) : ''}</div>
+					${entry.description ? `<div class="small">${frappe.utils.escape_html(entry.description)}</div>` : ''}
+					${entry.sales_order ? `<div class="small">${__('Sales Order')}: ${entry.sales_order}</div>` : ''}
+				</div>`,
+			},
+			{
+				fieldtype: 'Check',
+				fieldname: 'not_billable',
+				label: __('Not billable'),
+				default: entry.is_billable ? 0 : 1,
+				read_only: locked ? 1 : 0,
+			},
+		],
+		primary_action_label: __('Save'),
+		primary_action(values) {
+			dialog.hide();
+			if (locked || !!values.not_billable === !entry.is_billable) return;
+			frappe.call({
+				method: 'fieldservice.site_visit.time_assignment.set_billable',
+				args: { entries: [name], billable: values.not_billable ? 0 : 1 },
+				freeze: true,
+				callback() {
+					frappe.show_alert({ message: __('{0} time entries updated', [1]), indicator: 'green' });
+					reload(page, state);
+				},
+			});
+		},
+	});
+	dialog.show();
 }

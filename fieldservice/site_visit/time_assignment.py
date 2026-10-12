@@ -109,14 +109,23 @@ def get_assignment_data(from_date=None, to_date=None, customer=None, project=Non
 
 
 @frappe.whitelist()
-def assign_entries(entries, sales_order=None, billable=None):
+def set_billable(entries, billable):
+	"""Nur "abrechenbar" aendern, die Zuordnung zum Auftrag bleibt (Popup der
+	Seite beim Anklicken eines Eintrags)."""
+	return assign_entries(entries, None, billable, keep_order=1)
+
+
+@frappe.whitelist()
+def assign_entries(entries, sales_order=None, billable=None, keep_order=0):
 	"""Ordnet Zeiteintraege (Namen der Timesheet-Detail-Zeilen) einem Auftrag
 	zu, hebt die Zuordnung auf oder aendert nur "abrechenbar":
 
 	- sales_order gesetzt: Zuordnung zum Auftrag (Projekt des Auftrags wird
-	  uebernommen); abrechenbar, sofern billable nicht ausdruecklich 0 ist
+	  uebernommen); "abrechenbar" bleibt, wie es am Eintrag steht, ausser
+	  billable ist ausdruecklich gesetzt
 	- sales_order leer + billable=0: als nicht abrechenbar markieren
 	- sales_order leer + billable=1/leer: Zuordnung aufheben
+	- keep_order=1 (set_billable): nur "abrechenbar" aendern, Zuordnung bleibt
 
 	Gespeicherte (gebuchte) Zeitblaetter erlauben keine normale Aenderung -
 	die Zeilen werden dann direkt aktualisiert und die Summen des
@@ -158,11 +167,14 @@ def assign_entries(entries, sales_order=None, billable=None):
 				old_projects.add(row.project)
 			if row.custom_sales_order:
 				affected_orders.add(row.custom_sales_order)
-			if order:
+			if cint(keep_order):
+				row.is_billable = 1 if billable is None or cint(billable) else 0
+			elif order:
 				row.custom_sales_order = order.name
 				if order.project:
 					row.project = order.project
-				row.is_billable = 0 if billable is not None and not cint(billable) else 1
+				if billable is not None:
+					row.is_billable = 1 if cint(billable) else 0
 			elif billable is not None and not cint(billable):
 				row.is_billable = 0
 			else:

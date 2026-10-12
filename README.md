@@ -854,14 +854,14 @@ erfassen, danach zuordnen.
 - Links: nicht zugeordnete Zeiteinträge (Timesheet Detail ohne Auftrag, nicht
   fakturiert) im gewählten Zeitraum, filterbar nach Kunde/Projekt.
 - Rechts: offene Aufträge als Ablageziele (mit den schon zugeordneten Stunden).
-  Der Haken **Nicht abrechenbar** in der Kopfzeile gilt für alles, was gerade
-  auf einen Auftrag gezogen wird: die Zeit wird dem Auftrag zugeordnet, aber
-  nicht abgerechnet.
-- Karte anklicken wählt sie (mehrere möglich), Ziehen legt die gewählten
-  Karten auf ein Ziel. Auf einen **Auftrag** gezogen: der Eintrag bekommt
-  `custom_sales_order` und das Projekt des Auftrags; `is_billable` ist 1, bei
-  gesetztem Haken 0. Zurück in die linke Liste gezogen: Zuordnung
-  aufgehoben.
+- Karte ziehen: auf einen **Auftrag** gelegt bekommt der Eintrag
+  `custom_sales_order` und das Projekt des Auftrags (der Abrechenbar-Status
+  bleibt, wie er ist); zurück in die linke Liste gezogen wird die Zuordnung
+  aufgehoben. Strg/Cmd-Klick wählt mehrere Karten, die zusammen gezogen werden.
+- **Einfacher Klick auf eine Karte** öffnet ein Popup mit den Details und dem
+  Haken **Nicht abrechenbar**. Speichern ändert nur `is_billable` (die
+  Zuordnung bleibt, `set_billable`); die Auftragszeile wird danach
+  nachgerechnet. Nicht abrechenbare Karten zeigen ein graues Etikett.
 - **Auftragszeilen werden mitgeführt:** Nach jeder Zuordnung gleicht
   `sync_order_time_lines` die Dienstleistungs-Zeilen des Auftrags ab. Pro
   Dienstleistungsartikel (aus der Aktivitätsart) gibt es eine Zeile mit der
