@@ -805,3 +805,17 @@ Vorausplanung); es wird erst beim Buchen verlangt.
 Rückkehr auf die Seite neu (`on_page_show`) und reagiert auf das
 `list_update`-Ereignis von Site Visit. Neu angelegte Termine erscheinen ohne
 Browser-Reload.
+
+## Betrieb dieser Installation
+
+Nicht Teil der App, aber für den Betrieb relevant (Frappe Manager, `fm`):
+
+- Die Site `erpnextdocker.netbird.selfhosted` ist zusätzlich unter
+  **erp16.bockhoff.cloud** erreichbar (`fm update <site> --add-alias
+  erp16.bockhoff.cloud`). Der Name zeigt im DNS auf den NetBird-Server, der
+  an diesen Rechner (NetBird-IP `100.70.116.155`, Port 80, Host-Header
+  unverändert) weiterleitet; der Zugriff erfolgt nur über das NetBird-Netz.
+- System Settings → Time Zone: `Europe/Berlin` (siehe "Zeitzone").
+- Die Timer-Knöpfe im Site Visit (`update_timer_toolbar`) entfernen vor jedem
+  Neuaufbau ihre alten Buttons, sonst standen sie nach mehrfachem `refresh`
+  doppelt in der Kopfzeile.

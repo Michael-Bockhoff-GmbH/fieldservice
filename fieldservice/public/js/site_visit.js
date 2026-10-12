@@ -281,10 +281,18 @@ function calculate_mileage(frm) {
 // Timesheet-Eintrag anlegt (siehe _get_work_segments dort).
 function update_timer_toolbar(frm) {
 	stop_ticking(frm);
+	// refresh feuert mehrfach (u. a. durch frm.trigger('refresh') in onload,
+	// sobald die Settings geladen sind) - page.add_button() entfernt
+	// vorhandene Buttons nicht, die Timer-Knoepfe standen sonst doppelt da.
+	(frm.__timer_buttons || []).forEach(($btn) => $btn.remove());
+	frm.__timer_buttons = [];
+	const add_timer_button = (label, action) => {
+		frm.__timer_buttons.push(frm.page.add_button(label, action));
+	};
 	if (frm.doc.docstatus !== 0) return;
 
 	if (!frm.doc.from_time) {
-		frm.page.add_button(__('Start Timer'), () => {
+		add_timer_button(__('Start Timer'), () => {
 			frm.set_value('from_time', frappe.datetime.now_datetime()).then(() => frm.save());
 		});
 		return;
@@ -292,11 +300,11 @@ function update_timer_toolbar(frm) {
 	if (frm.doc.to_time) return;
 
 	if (get_open_break(frm)) {
-		frm.page.add_button(__('Resume Timer'), () => resume_timer(frm));
+		add_timer_button(__('Resume Timer'), () => resume_timer(frm));
 	} else {
-		frm.page.add_button(__('Pause Timer'), () => pause_timer(frm));
+		add_timer_button(__('Pause Timer'), () => pause_timer(frm));
 	}
-	frm.page.add_button(__('Stop Timer'), () => stop_timer(frm));
+	add_timer_button(__('Stop Timer'), () => stop_timer(frm));
 	start_ticking(frm);
 }
 
