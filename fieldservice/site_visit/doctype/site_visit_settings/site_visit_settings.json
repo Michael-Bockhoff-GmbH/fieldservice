@@ -82,7 +82,7 @@
   },
   {
    "default": "1",
-   "description": "Hides the Additional Items table on Site Visit. Turn off if this business only bills time, never material/hardware used on-site. Items from the Item Group \"Services\" can never be added as an Additional Item.",
+   "description": "When checked, the Additional Items table is shown on the Site Visit. Uncheck it if this business only bills time and never material/hardware used on-site. Items from the Item Group \"Services\" can never be added as an Additional Item.",
    "fieldname": "additional_items_enabled",
    "fieldtype": "Check",
    "label": "Enable Additional Items"
