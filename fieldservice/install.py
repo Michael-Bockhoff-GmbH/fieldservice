@@ -91,6 +91,7 @@ HOME_SHORTCUTS = [
 	{"label": "Timesheet", "type": "DocType", "link_to": "Timesheet", "doc_view": "List", "color": "Orange"},
 	{"label": "Zeit Projekt Einstellungen", "type": "DocType", "link_to": "Zeit Projekt Einstellungen", "color": "Green"},
 	{"label": "Dispatch Board", "type": "Page", "link_to": "dispatch-board", "color": "Purple"},
+	{"label": "Time Assignment", "type": "Page", "link_to": "time-assignment", "color": "Cyan"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -108,6 +109,7 @@ SITE_VISITS_WORKSPACE = "Site Visits"
 SITE_VISITS_WORKSPACE_LINKS = [
 	{"label": "Calendar", "link_type": "DocType", "link_to": "Site Visit", "doc_view": "Calendar"},
 	{"label": "Dispatch Board", "link_type": "Page", "link_to": "dispatch-board"},
+	{"label": "Time Assignment", "link_type": "Page", "link_to": "time-assignment"},
 ]
 
 # ---------------------------------------------------------------------------

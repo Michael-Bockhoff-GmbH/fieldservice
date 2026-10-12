@@ -1,0 +1,75 @@
+.time-assignment {
+	display: flex;
+	gap: 16px;
+	padding: 15px;
+	align-items: flex-start;
+}
+
+.ta-column {
+	flex: 1 1 0;
+	min-width: 0;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-md);
+	padding: 10px;
+}
+
+.ta-heading {
+	font-weight: 600;
+	margin-bottom: 10px;
+}
+
+.ta-card {
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-md);
+	background: var(--card-bg);
+	padding: 8px 10px;
+	margin-bottom: 8px;
+	cursor: grab;
+}
+
+.ta-card.ta-selected {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 1px var(--primary);
+}
+
+.ta-card.ta-locked {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.ta-card-title {
+	font-weight: 500;
+}
+
+.ta-drop {
+	border: 2px dashed var(--border-color);
+	border-radius: var(--border-radius-md);
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+.ta-drop.ta-over {
+	border-color: var(--primary);
+	background: var(--control-bg);
+}
+
+.ta-nonbillable {
+	text-align: center;
+	color: var(--text-muted);
+}
+
+.ta-order-head {
+	display: flex;
+	gap: 8px;
+	align-items: baseline;
+	margin-bottom: 6px;
+}
+
+.ta-hours {
+	margin-left: auto;
+	font-weight: 600;
+}
+
+.ta-source.ta-over {
+	border-color: var(--primary);
+}

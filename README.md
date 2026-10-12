@@ -834,3 +834,28 @@ Fahrtkostenartikel.
 **Adressfelder:** *Customer Site Address*, *Start Address* und *Default Start
 Address* fassen bis zu 500 Zeichen (vorher 140; längere Adressen wurden
 abgeschnitten).
+
+## Zeitzuordnung (Drag & Drop)
+
+Eigene Seite **Time Assignment / Zeitzuordnung** (Home, Sidebar „Kundeneinsätze“,
+Workspace „Site Visits“), bewusst getrennt vom Einsatzplan: der Einsatzplan
+plant Termine, hier werden bereits **erfasste Zeiten** verteilt – erst
+erfassen, danach zuordnen.
+
+- Links: nicht zugeordnete Zeiteinträge (Timesheet Detail ohne Auftrag, nicht
+  fakturiert) im gewählten Zeitraum, filterbar nach Kunde/Projekt.
+- Rechts: offene Aufträge als Ablageziele (mit den schon zugeordneten Stunden)
+  und das Ziel **Nicht abrechenbar**.
+- Karte anklicken wählt sie (mehrere möglich), Ziehen legt die gewählten
+  Karten auf ein Ziel. Auf einen **Auftrag** gezogen: der Eintrag bekommt
+  `custom_sales_order`, das Projekt des Auftrags und ist abrechenbar. Auf
+  **Nicht abrechenbar**: `is_billable = 0`. Zurück in die linke Liste
+  gezogen: Zuordnung aufgehoben.
+- Das sind dieselben Felder, nach denen der Zeitimport in der Rechnung
+  filtert (siehe "Filtern nach Auftrag"); fakturierte Einträge lassen sich
+  nicht ändern. Bei gebuchten Zeitblättern werden Summen von Zeitblatt und
+  Projekt neu berechnet (`assign_entries` in `site_visit/time_assignment.py`).
+- Zugriff: System Manager und Projects Manager.
+
+Nicht enthalten: eine Pauschale als Ziel (es gibt kein Pauschal-Datenmodell)
+und das Anlegen von Aufgaben (Tasks) – nur die Zuordnung von Zeiten.

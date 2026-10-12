@@ -75,6 +75,19 @@
    "onboard": 0,
    "stats_filter": "[]",
    "type": "Link"
+  },
+  {
+   "color": "Grey",
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Time Assignment",
+   "link_count": 0,
+   "link_to": "time-assignment",
+   "link_type": "Page",
+   "onboard": 0,
+   "stats_filter": "[]",
+   "type": "Link"
   }
  ],
  "modified": "2026-09-13 09:00:00.000000",

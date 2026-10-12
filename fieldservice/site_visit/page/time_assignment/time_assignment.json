@@ -1,0 +1,24 @@
+{
+ "content": null,
+ "creation": "2026-10-12 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Page",
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Site Visit",
+ "name": "time-assignment",
+ "owner": "Administrator",
+ "page_name": "time-assignment",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Projects Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "title": "Time Assignment"
+}
