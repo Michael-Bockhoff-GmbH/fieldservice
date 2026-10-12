@@ -72,8 +72,7 @@ fieldservice/
     │   │   ├── site_visit_photo/    # Kindtabelle für Fotos
     │   │   ├── site_visit_item/     # Kindtabelle für Zusatzartikel
     │   │   ├── site_visit_break/    # Kindtabelle für Pausen (Timer)
-    │   │   ├── site_visit_excluded_item_group/ # Kindtabelle für Excluded Item Groups
-    │   │   └── site_visit_settings/ # Single-Doctype, App-Einstellungen
+        │   │   └── site_visit_settings/ # Single-Doctype, App-Einstellungen
     │   ├── print_format/
     │   │   └── site_visit_report/   # PDF-Vorlage
     │   ├── workspace/
@@ -170,8 +169,7 @@ bench --site <deine-site> uninstall-app fieldservice
 
 - die Doctype "Site Visit" und ihre Kindtabellen ("Site Visit Photo",
   "Site Visit Item", "Site Visit Break")
-- die Doctype "Site Visit Settings" und ihre Kindtabelle "Site Visit
-  Excluded Item Group"
+- die Doctype "Site Visit Settings"
 - die Doctype "Zeit Projekt Einstellungen", die vier Custom Fields von
   "Zeit Projekt" (`before_uninstall`) und die Property Setter, die
   Customer Reference (Sales Order.po_no) verpflichtend macht
@@ -321,13 +319,13 @@ Pflicht wird weiterhin erst beim Buchen selbst geprüft (`before_submit`).
 **Zusätzliche Artikel** (`extra_items`): vor Ort zusätzlich benötigtes
 Material (z. B. ein USB-auf-LAN-Adapter), das noch nicht im Auftrag steht –
 keine Dienstleistungsartikel. Das Artikel-Feld ist über
-`item_query_extra_items` (`site_visit.py`) auf die in **Site Visit
-Settings** hinterlegten **Excluded Item Groups** eingeschränkt: Artikel aus
-diesen Gruppen (inkl. Untergruppen) sind **nicht** wählbar, alles andere
-schon – ein Ausschluss- statt Einschluss-Filter, da meist nur die eigene(n)
-Dienstleistungs-Artikelgruppe(n) ausgeschlossen werden müssen, statt
-umgekehrt jede erlaubte Hardware-/Verbrauchsmaterial-Gruppe einzeln
-aufzulisten. Ohne hinterlegte Gruppe gilt keine Einschränkung. Beim Buchen des Site
+`item_query_extra_items` (`site_visit.py`) eingeschränkt: Artikel aus der
+Artikelgruppe **Services** (Dienstleistungen, inkl. Untergruppen) sind **nie**
+wählbar – die Zeit wird bereits über den Dienstleistungsartikel der
+Aktivitätsart abgerechnet, ein Dienstleistungsartikel unter den Zusatzartikeln
+würde sie doppelt berechnen. Das ist fest im Code (`EXCLUDED_ITEM_GROUP`) und
+keine Einstellung mehr; `validate_extra_items` prüft es zusätzlich serverseitig
+(API, Import, Duplizieren). Beim Buchen des Site
 Visit werden neue (noch nicht übernommene) Zeilen automatisch in die
 Positionen des verknüpften Auftrags aufgenommen – auch wenn der Auftrag
 bereits gebucht ist (über
@@ -397,12 +395,10 @@ die App-weiten Einstellungen von Site Visit:
 | Funktionen | Enable Mileage Calculation | Standard **an**. Aus = Kilometer-/Entfernungsfelder und "Calculate Mileage" verschwinden vom Site Visit, keine automatische Kilometerabrechnung mehr. |
 | Funktionen | Enable Remote Visits | Standard **an**. Aus = der Haken "Remote Visit" verschwindet, jeder Einsatz gilt als vor Ort. |
 | Funktionen | Enable Photos | Standard **an**. Aus = der Bereich "Photos" verschwindet vom Site Visit. |
-| Funktionen | Enable Additional Items | Standard **an**. Aus = die Tabelle "Additional Items" (und die Einstellung "Excluded Item Groups" darunter) verschwindet vom Site Visit. |
+| Funktionen | Enable Additional Items | Standard **an**. Aus = die Tabelle "Additional Items" verschwindet vom Site Visit. |
 | Kilometer | OpenRouteService API Key | Kostenloser Key von [openrouteservice.org](https://openrouteservice.org) — ohne Key funktioniert "Kilometer berechnen" nicht. Feldtyp **Password**, daher verschlüsselt gespeichert und im Formular maskiert. |
 | Kilometer | Default Start Address | Freitext-Startpunkt, falls der Site Visit selbst keine eigene Startadresse hat. Leer = Standardadresse der Firma. |
 | Kilometer | Mileage Item | Artikel, dessen Verkaufspreis pro Kilometer als Fahrtkosten-Position im Auftrag berechnet wird. Leer = keine automatische Fahrtkosten-Abrechnung. |
-| Zusätzliche Artikel | Excluded Item Groups | Artikel aus diesen Gruppen (inkl. Untergruppen, i. d. R. die Dienstleistungs-Gruppe(n)) sind als Zusatzartikel **nicht** wählbar — alles andere schon. Leer = keine Einschränkung. |
-| Zusätzliche Artikel | Disable Item Selection | Standard **aus**. An = es ist überhaupt kein Zusatzartikel wählbar, die Liste der ausgeschlossenen Gruppen ist dann ausgeblendet. Die oberste Artikelgruppe ("Alle Artikelgruppen") lässt sich in der Liste nicht mehr auswählen (sie würde ohnehin alles ausschließen) und wird beim Speichern auch aus per API/Import gesetzten Listen entfernt. |
 | Fernarbeit | Remote Visit Mode | "Hide Signature" (Unterschriftsfelder ausblenden) oder "Send Signing Link to Customer" (Link per E-Mail). |
 | Fernarbeit | Signature Required | Ohne Unterschrift nicht buchbar — außer bei Fernarbeit im Modus "Hide Signature". |
 

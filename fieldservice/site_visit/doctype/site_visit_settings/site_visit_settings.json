@@ -19,9 +19,6 @@
   "default_start_address",
   "column_break_mileage",
   "mileage_item",
-  "hardware_section",
-  "exclude_all_item_groups",
-  "excluded_item_groups",
   "remote_section",
   "remote_mode",
   "column_break_remote",
@@ -85,7 +82,7 @@
   },
   {
    "default": "1",
-   "description": "Hides the Additional Items table on Site Visit (and the Excluded Item Groups setting below, which only applies to it). Turn off if this business only bills time, never material/hardware used on-site.",
+   "description": "Hides the Additional Items table on Site Visit. Turn off if this business only bills time, never material/hardware used on-site. Items from the Item Group \"Services\" can never be added as an Additional Item.",
    "fieldname": "additional_items_enabled",
    "fieldtype": "Check",
    "label": "Enable Additional Items"
@@ -118,27 +115,6 @@
    "fieldtype": "Link",
    "label": "Mileage Item",
    "options": "Item"
-  },
-  {
-   "depends_on": "eval:doc.additional_items_enabled",
-   "fieldname": "hardware_section",
-   "fieldtype": "Section Break",
-   "label": "Additional Items"
-  },
-  {
-   "default": "0",
-   "description": "No item can be added as an Additional Item on a Site Visit at all. Use this instead of selecting the root Item Group below.",
-   "fieldname": "exclude_all_item_groups",
-   "fieldtype": "Check",
-   "label": "Disable Item Selection"
-  },
-  {
-   "depends_on": "eval:!doc.exclude_all_item_groups",
-   "description": "Items from these Item Groups (and their sub-groups) cannot be added as an Additional Item on a Site Visit - everything else is allowed. In most cases, excluding your services/labor group(s) here is enough. Leave empty for no restriction.",
-   "fieldname": "excluded_item_groups",
-   "fieldtype": "Table MultiSelect",
-   "label": "Excluded Item Groups",
-   "options": "Site Visit Excluded Item Group"
   },
   {
    "depends_on": "eval:doc.remote_visits_enabled",

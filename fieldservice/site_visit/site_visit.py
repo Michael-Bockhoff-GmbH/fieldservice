@@ -364,33 +364,59 @@ def _get_mileage_line(doc, so):
 	return line
 
 
+# Artikelgruppe der Dienstleistungsartikel: als Zusatzartikel nie waehlbar.
+# Die gearbeitete Zeit wird ueber den Dienstleistungsartikel der Aktivitaetsart
+# abgerechnet (_get_time_item) - ein Dienstleistungsartikel unter den
+# Zusatzartikeln wuerde dieselbe Leistung ein zweites Mal berechnen. Fest im
+# Code statt als Einstellung: so kann sie nicht versehentlich verloren gehen.
+EXCLUDED_ITEM_GROUP = "Services"
+
+
+def _excluded_item_groups():
+	"""EXCLUDED_ITEM_GROUP samt aller Untergruppen (leer, falls es die Gruppe
+	nicht gibt)."""
+	from frappe.utils.nestedset import get_descendants_of
+
+	if not frappe.db.exists("Item Group", EXCLUDED_ITEM_GROUP):
+		return []
+	return [EXCLUDED_ITEM_GROUP, *get_descendants_of("Item Group", EXCLUDED_ITEM_GROUP)]
+
+
+def validate_extra_items(doc, method=None):
+	"""Serverseitiges Gegenstueck zu item_query_extra_items: die Auswahl im
+	Formular laesst sich per API/Import/Duplizieren umgehen. Nur Zeilen, die
+	noch nicht in den Auftrag uebernommen wurden, werden geprueft - bereits
+	abgerechnete Altzeilen bleiben unangetastet."""
+	excluded = _excluded_item_groups()
+	if not excluded:
+		return
+	for row in doc.extra_items:
+		if row.added_to_order or not row.item_code:
+			continue
+		if frappe.db.get_value("Item", row.item_code, "item_group") in excluded:
+			frappe.throw(
+				_("Row {0}: {1} belongs to the Item Group {2} and cannot be added as an Additional Item.").format(
+					row.idx, row.item_code, EXCLUDED_ITEM_GROUP
+				)
+			)
+
+
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def item_query_extra_items(doctype, txt, searchfield, start, page_len, filters):
 	"""Link-Query fuer das Feld "Item" in der Zusatzartikel-Tabelle (siehe
-	frm.set_query in site_visit.js): schliesst die in Site Visit Settings
-	hinterlegten Artikelgruppen (inkl. Untergruppen) aus - z. B. die
-	Dienstleistungsartikel, damit vor Ort nicht versehentlich eine
-	Dienstleistung statt benoetigten Materials erfasst wird. In den
-	meisten Faellen reicht es, genau die Dienstleistungs-Artikelgruppe(n)
-	hier einzutragen - alles andere (Hardware, Verbrauchsmaterial, ...)
-	bleibt waehlbar. Leere Einstellung = keine Einschraenkung; "Disable Item Selection"
-	angehakt = gar kein Artikel waehlbar. Nutzt
-	ERPNexts eigene item_query weiter (respektiert disabled/is_sales_item
-	usw.), ergaenzt nur den Gruppenfilter."""
+	frm.set_query in site_visit.js): blendet die Dienstleistungsartikel
+	(EXCLUDED_ITEM_GROUP inkl. Untergruppen) aus, damit vor Ort nicht
+	versehentlich eine Dienstleistung statt benoetigten Materials erfasst und
+	doppelt berechnet wird. Alles andere (Hardware, Verbrauchsmaterial, ...)
+	bleibt waehlbar. Nutzt ERPNexts eigene item_query weiter (respektiert
+	disabled/is_sales_item usw.), ergaenzt nur den Gruppenfilter."""
 	from erpnext.controllers.queries import item_query
-	from frappe.utils.nestedset import get_descendants_of
 
-	settings = frappe.get_cached_doc("Site Visit Settings")
-	if settings.exclude_all_item_groups:
-		return []
 	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
-	excluded_groups = [row.item_group for row in settings.excluded_item_groups]
-	if excluded_groups:
-		all_excluded = set(excluded_groups)
-		for group in excluded_groups:
-			all_excluded.update(get_descendants_of("Item Group", group))
-		filters["item_group"] = ["not in", list(all_excluded)]
+	excluded = _excluded_item_groups()
+	if excluded:
+		filters["item_group"] = ["not in", excluded]
 
 	return item_query(doctype, txt, searchfield, start, page_len, filters)
 
