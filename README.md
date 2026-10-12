@@ -862,6 +862,16 @@ erfassen, danach zuordnen.
   `custom_sales_order` und das Projekt des Auftrags; `is_billable` ist 1, bei
   gesetztem Haken 0. Zurück in die linke Liste gezogen: Zuordnung
   aufgehoben.
+- **Auftragszeilen werden mitgeführt:** Nach jeder Zuordnung gleicht
+  `sync_order_time_lines` die Dienstleistungs-Zeilen des Auftrags ab. Pro
+  Dienstleistungsartikel (aus der Aktivitätsart) gibt es eine Zeile mit der
+  Summe der zugeordneten, abrechenbaren Stunden – angelegt, angepasst oder
+  entfernt, wenn nichts mehr zugeordnet ist (auch beim alten Auftrag, wenn
+  eine Zeit umgehängt oder aufgehoben wird). Die Zeilen sind über das
+  Custom Field `custom_fs_assigned_time` (Sales Order Item) markiert. Zeiten
+  aus Site-Visit-Zeitblättern werden **nicht** noch einmal addiert, für die
+  steht schon die Zeit-Position des Site Visit im Auftrag. Aktivitätsarten
+  ohne Dienstleistungsartikel werden mit einem Hinweis übersprungen.
 - Das sind dieselben Felder, nach denen der Zeitimport in der Rechnung
   filtert (siehe "Filtern nach Auftrag"); fakturierte Einträge lassen sich
   nicht ändern. Bei gebuchten Zeitblättern werden Summen von Zeitblatt und

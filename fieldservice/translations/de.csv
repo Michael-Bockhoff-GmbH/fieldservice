@@ -171,3 +171,4 @@
 "Optional - time can also be booked without a Sales Order and assigned later (see Time Assignment). If there isn't one yet, check ""Create Sales Order"" below instead of picking one here.","Optional - die Zeit lässt sich auch ohne Auftrag buchen und später zuordnen (siehe Time Assignment). Gibt es noch keinen, unten ""Create Sales Order"" ankreuzen, statt hier einen auszuwählen."
 "(no customer)","(kein Kunde)"
 "Optional - required only with a Project, Sales Order or ""Create Sales Order"". Time without a customer can be assigned later (see Time Assignment).","Optional - nur mit Projekt, Auftrag oder ""Create Sales Order"" nötig. Zeit ohne Kunde lässt sich später zuordnen (siehe Time Assignment)."
+"No Dienstleistungsartikel configured for Activity Type {0} - its time was not added to {1}.","Für die Aktivitätsart {0} ist kein Dienstleistungsartikel hinterlegt - ihre Zeit wurde nicht zu {1} hinzugefügt."
