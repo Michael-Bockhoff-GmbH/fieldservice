@@ -48,11 +48,11 @@ def before_submit(doc, method=None):
 	site_visit.json): ein Entwurf mit nur laufendem Timer (from_time gesetzt,
 	"Start Timer" speichert sofort, siehe site_visit.js) oder eine reine
 	Vorausplanung (scheduled_start/scheduled_end) waere sonst gar nicht
-	speicherbar. Deshalb hier explizit vor dem Buchen geprueft. customer ist
-	dagegen auch fuer Entwuerfe Pflicht.
+	speicherbar. Deshalb hier explizit vor dem Buchen geprueft.
 
-	Projekt und Auftrag sind beim Buchen optional: wer die Zeit zuerst erfasst
-	und erst danach zuordnen will, bucht ohne beides - das Timesheet entsteht
+	Kunde, Projekt und Auftrag sind beim Buchen optional: wer die Zeit zuerst
+	erfasst und erst danach zuordnen will, bucht ohne alles davon (ein Kunde
+	ist nur noetig, sobald Projekt, Auftrag oder "Create Sales Order" im Spiel ist) - das Timesheet entsteht
 	dann ohne Auftrag/Projekt und wird spaeter ueber die Seite "Time
 	Assignment" (time_assignment.py) einem Auftrag zugeordnet. Ist ein
 	Projekt gewaehlt, braucht es dagegen weiterhin einen Auftrag (vorhanden
@@ -62,7 +62,7 @@ def before_submit(doc, method=None):
 	if doc.timesheet and _linked_timesheet_is_submitted(doc.timesheet):
 		return
 
-	if not doc.customer:
+	if not doc.customer and (doc.project or doc.sales_order or doc.create_sales_order):
 		frappe.throw(_("Please select a Customer before submitting."))
 	if not doc.activity_type:
 		frappe.throw(_("Please select an Activity Type before submitting."))

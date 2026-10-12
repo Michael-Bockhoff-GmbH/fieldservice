@@ -66,6 +66,11 @@ frappe.views.calendar["Site Visit"] = {
 				if (value) lines.push(`${label}: ${value}`);
 				info.el.setAttribute("title", lines.join("\n"));
 			});
+			// Ohne Kunde (Zeit wird spaeter zugeordnet) bliebe der Titel leer
+			if (!info.event.title) {
+				const title_el = info.el.querySelector(".fc-event-title");
+				if (title_el) title_el.textContent = __("(no customer)");
+			}
 		},
 	},
 };

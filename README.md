@@ -798,10 +798,13 @@ nach dem Neuladen wieder her. Der Core bleibt unverändert. Wer Timesheet
 zuletzt über „Kundeneinsätze“ geöffnet hat, bleibt dort; wer es über
 „Projects“ öffnet, bleibt in „Projects“.
 
-**Kunde ist Pflichtfeld:** `customer` ist auf Feldebene Pflicht – auch für
-Entwürfe und geplante Termine. Ein Termin ohne Kunde lässt sich nicht
-speichern. `from_time` ist dagegen beim Speichern optional (reine
-Vorausplanung); es wird erst beim Buchen verlangt.
+**Kunde ist optional:** `customer` ist kein Pflichtfeld mehr – ein Site
+Visit lässt sich ohne Kunde speichern und buchen, damit die erfasste Zeit
+später über die Zeitzuordnung verteilt werden kann. Nötig ist der Kunde erst,
+sobald ein Projekt, ein Auftrag oder „Create Sales Order“ im Spiel ist
+(`before_submit`). `from_time` ist beim Speichern ebenfalls optional (reine
+Vorausplanung); es wird erst beim Buchen verlangt. Ohne Kunde zeigt die
+Kalenderansicht „(no customer)“ als Titel.
 
 **Einsatzplan aktuell halten:** Der Einsatzplan lädt seine Daten bei jeder
 Rückkehr auf die Seite neu (`on_page_show`) und reagiert auf das

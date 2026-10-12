@@ -60,7 +60,7 @@
    "in_list_view": 1,
    "label": "Customer",
    "options": "Customer",
-   "reqd": 1
+   "description": "Optional - required only with a Project, Sales Order or \"Create Sales Order\". Time without a customer can be assigned later (see Time Assignment)."
   },
   {
    "fetch_from": "customer.customer_name",
