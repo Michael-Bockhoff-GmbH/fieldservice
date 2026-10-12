@@ -392,7 +392,7 @@ die App-weiten Einstellungen von Site Visit:
 
 | Bereich | Feld | Bedeutung |
 |---|---|---|
-| Allgemein | Time Zone | Zeitzone des Unternehmens (Standard **Europe/Berlin**, volle IANA-Liste wie in Frappes eigenen System Settings, Sommerzeit automatisch berücksichtigt) — bewusst getrennt von der site-weiten System-Settings-Zeitzone, siehe "## Terminplanung" für den Hintergrund. |
+| Allgemein | Time Zone | Zeitzone des Unternehmens (Standard **Europe/Berlin**, volle IANA-Liste wie in Frappes eigenen System Settings, Sommerzeit automatisch berücksichtigt) — für künftige Anbindungen (Outlook-Sync). Die Anzeige von Terminen richtet sich nach System Settings und der Benutzer-Zeitzone, siehe "### Zeitzone". |
 | Terminplanung | Calendar Tooltip Field | **Project** (Standard) oder **Sales Order** — welches Feld beim Überfahren eines geplanten Termins mit der Maus zusätzlich zur Uhrzeit angezeigt wird, in der Kalenderansicht und im Einsatzplan gleichermaßen. |
 | Funktionen | Enable Mileage Calculation | Standard **an**. Aus = Kilometer-/Entfernungsfelder und "Calculate Mileage" verschwinden vom Site Visit, keine automatische Kilometerabrechnung mehr. |
 | Funktionen | Enable Remote Visits | Standard **an**. Aus = der Haken "Remote Visit" verschwindet, jeder Einsatz gilt als vor Ort. |
@@ -565,11 +565,9 @@ und zeigte rohe Werte. Das passte nicht zum Formular, das immer umrechnet —
 Termine erschienen dort um Stunden verschoben.
 
 **Wichtig:** Das stimmt nur, wenn System Settings → Time Zone sinnvoll gesetzt
-ist. Auf diesem Server steht sie auf "Asia/Kolkata", Benutzer *Administrator*
-auf "Europe/Berlin". Die Anzeige ist dadurch konsistent, aber alle
-gespeicherten Zeitstempel der Site liegen in Kolkata-Zeit. Sauberer wäre
-"Europe/Berlin" in System Settings — das betrifft aber die ganze Site und
-verschiebt bereits gespeicherte Werte, daher nicht ohne Absprache.
+ist. Auf diesem Server stand sie anfangs auf "Asia/Kolkata"; sie wurde am
+09.10.2026 auf "Europe/Berlin" umgestellt (vorher Datenbank-Backup). Bereits
+gespeicherte Werte werden seitdem als Berliner Zeit gelesen.
 
 **Site Visit Settings → Time Zone** (Standard **Europe/Berlin**, volle
 IANA-Zeitzonenliste wie in Frappes eigenen System Settings, siehe

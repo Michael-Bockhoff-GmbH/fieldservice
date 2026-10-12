@@ -35,7 +35,7 @@
   },
   {
    "default": "Europe/Berlin",
-   "description": "Time zone this business operates in - independent of the site-wide System Settings time zone (which this app deliberately does not rely on for displaying scheduled appointments, see Calendar view). Also the time zone future integrations (e.g. an Office 365/Outlook calendar sync) would use. Includes daylight saving time (summer time) automatically, like every IANA time zone name.",
+   "description": "Time zone this business operates in. Used by future integrations (e.g. an Office 365/Outlook calendar sync). Appointments in the form, Calendar and Dispatch Board are shown in the user's time zone (User settings), based on System Settings. Includes daylight saving time (summer time) automatically, like every IANA time zone name.",
    "fieldname": "time_zone",
    "fieldtype": "Select",
    "label": "Time Zone"

@@ -17,7 +17,6 @@ frappe.ui.form.on('Site Visit Settings', {
 		// Artikel aus. Dafuer gibt es die Checkbox "Disable Item Selection".
 		const hide_root_group = () => ({ filters: { parent_item_group: ['is', 'set'] } });
 		frm.set_query('excluded_item_groups', hide_root_group);
-		frm.set_query('item_group', 'excluded_item_groups', hide_root_group);
 
 		// Dieselbe Zeitzonenliste wie Frappes eigene System Settings -> "Time
 		// Zone" (siehe get_timezone_options() in site_visit_settings.py) - das
