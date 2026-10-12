@@ -815,3 +815,22 @@ Nicht Teil der App, aber für den Betrieb relevant (Frappe Manager, `fm`):
 - Die Timer-Knöpfe im Site Visit (`update_timer_toolbar`) entfernen vor jedem
   Neuaufbau ihre alten Buttons, sonst standen sie nach mehrfachem `refresh`
   doppelt in der Kopfzeile.
+
+## Zeit-Position im Auftrag
+
+Beim Buchen eines Site Visit wird die gearbeitete Zeit (Dienstleistungsartikel
+der Aktivitätsart × Stunden ohne Pausen) im verknüpften Auftrag abgeglichen –
+nicht nur bei einem automatisch angelegten Auftrag, sondern auch bei einem
+vom Techniker gewählten, vorhandenen Auftrag. Pro Site Visit gibt es genau
+eine Zeile (`time_sales_order_item` merkt den Zeilennamen): ein erneuter Lauf,
+etwa nach Storno und Amend mit geänderter Endzeit, aktualisiert die Menge statt
+eine zweite Zeile anzuhängen. Hat die Aktivitätsart keinen
+Dienstleistungsartikel, entsteht bei einem vorhandenen Auftrag keine
+Zeit-Position (wie bisher). Neue Zeilen bekommen bei Bedarf ein Ersatzlager
+(`_fallback_warehouse`), weil ERPNext für jede neue Auftragszeile eines
+Sales Order ein Lager verlangt – auch für Dienstleistungs- und
+Fahrtkostenartikel.
+
+**Adressfelder:** *Customer Site Address*, *Start Address* und *Default Start
+Address* fassen bis zu 500 Zeichen (vorher 140; längere Adressen wurden
+abgeschnitten).

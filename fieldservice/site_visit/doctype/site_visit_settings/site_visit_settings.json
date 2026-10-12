@@ -103,7 +103,8 @@
    "description": "Free-text address, no Address record required - search-as-you-type via OpenStreetMap. Used as the mileage start point when a Site Visit does not set its own Start Address. Leave empty to use the Company's own default address instead.",
    "fieldname": "default_start_address",
    "fieldtype": "Autocomplete",
-   "label": "Default Start Address"
+   "label": "Default Start Address",
+   "length": 500
   },
   {
    "fieldname": "column_break_mileage",

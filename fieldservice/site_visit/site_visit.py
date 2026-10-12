@@ -117,7 +117,7 @@ def before_submit(doc, method=None):
 		alert=True,
 	)
 
-	_sync_sales_order(doc)
+	_sync_sales_order(doc, segments)
 
 
 def _validate_signature(doc):
@@ -255,43 +255,66 @@ def _get_work_segments(doc):
 	return segments
 
 
-def _sync_sales_order(doc):
-	"""Ungebuchte Zusatzartikel (Feld extra_items) und, falls berechnet, eine
-	Fahrtkosten-Position in den verknuepften Auftrag uebernehmen - im selben
+def _sync_sales_order(doc, segments):
+	"""Gleicht den verknuepften Auftrag mit dem Site Visit ab: ungebuchte
+	Zusatzartikel (Feld extra_items), die gearbeitete Zeit (Dienstleistungs-
+	Position) und, falls berechnet, eine Fahrtkosten-Position - im selben
 	Request wie das Buchen, aus demselben Grund wie die Timesheet-Erstellung
 	oben. Bereits mit added_to_order=1 markierte Zusatzartikel-Zeilen wurden
 	schon ueber _create_sales_order() unten in einen neu angelegten Auftrag
 	aufgenommen und werden hier uebersprungen.
 
+	Die Zeit-Position (time_sales_order_item) und die Fahrtkosten-Position
+	(mileage_sales_order_item) werden ueber den gemerkten Zeilennamen
+	gefunden: ein erneuter Lauf (z. B. nach einem Amend mit geaenderter
+	Endzeit) aktualisiert die Menge statt eine zweite Zeile anzuhaengen. Bei
+	einem vorhandenen Auftrag, den der Techniker beim Site Visit ausgewaehlt
+	hat, kommt die Zeit so ebenfalls in den Auftrag - frueher entstand die
+	Zeit-Position nur beim automatisch angelegten Auftrag.
+
 	Nutzt erpnext.controllers.accounts_controller.update_child_qty_rate -
 	dieselbe Funktion, die auch der "Update Items"-Dialog im Auftrag selbst
 	verwendet - statt den Auftrag hier von Hand zu veraendern: das uebernimmt
 	auch bei bereits gebuchten Auftraegen korrekt Steuer-/Summenneuberechnung,
-	Kreditlimitpruefung usw. Beide Positionsarten in einem Aufruf, damit der
-	Auftrag dafuer nur einmal statt zweimal hintereinander gespeichert wird."""
-	pending_items = [row for row in doc.extra_items if not row.added_to_order]
-	if not pending_items and not _mileage_billable(doc):
-		return
-
+	Kreditlimitpruefung usw. Alle Positionsarten in einem Aufruf, damit der
+	Auftrag dafuer nur einmal statt mehrfach hintereinander gespeichert wird."""
 	from erpnext.controllers.accounts_controller import update_child_qty_rate
+	from frappe.utils import flt
+
+	pending_items = [row for row in doc.extra_items if not row.added_to_order]
 
 	so = frappe.get_doc("Sales Order", doc.sales_order)
+	time_line = _get_time_line(doc, segments, so)
 	mileage_line = _get_mileage_line(doc, so)
+	if not pending_items and not time_line and not mileage_line:
+		return
 
 	trans_items = []
 	for row in so.items:
 		item = row.as_dict()
 		item["docname"] = row.name
+		if time_line and time_line.get("docname") == row.name:
+			item["qty"] = time_line["qty"]
 		trans_items.append(item)
 	for row in pending_items:
 		trans_items.append({"item_code": row.item_code, "qty": row.qty, "uom": row.uom, "rate": row.rate})
+	if time_line and "docname" not in time_line:
+		trans_items.append(time_line)
 	if mileage_line:
 		trans_items.append(mileage_line)
 
+	# update_child_qty_rate() verlangt fuer JEDE neue Auftragszeile ein Lager
+	# (is_warehouse_required_for_new_child_item: bei Sales Order immer) - auch
+	# fuer Dienstleistungs- und Fahrtkostenartikel, die meist kein
+	# Standardlager haben. Fehlt eines, ein Ersatzlager einsetzen.
+	for line in trans_items:
+		if "docname" not in line and not line.get("warehouse"):
+			line["warehouse"] = _fallback_warehouse(so, line["item_code"])
+
 	# Namen vorher merken: update_child_qty_rate() gibt nichts zurueck und
-	# aktualisiert das hier geladene `so` nicht - fuer eine neu angelegte
-	# Kilometer-Zeile (kein docname im mileage_line-Dict) ist das die einzige
-	# Moeglichkeit, ihren Zeilennamen danach wiederzufinden (siehe unten).
+	# aktualisiert das hier geladene `so` nicht - fuer neu angelegte Zeilen
+	# (kein docname) ist das die einzige Moeglichkeit, ihre Zeilennamen
+	# danach wiederzufinden (siehe unten).
 	names_before = {row.name for row in so.items}
 
 	with _as_administrator():
@@ -300,14 +323,67 @@ def _sync_sales_order(doc):
 	for row in pending_items:
 		row.added_to_order = 1
 
-	if mileage_line:
-		if "docname" in mileage_line:
-			doc.mileage_sales_order_item = mileage_line["docname"]
-		else:
-			so.reload()
-			new_row = next((row.name for row in so.items if row.name not in names_before), None)
-			if new_row:
-				doc.mileage_sales_order_item = new_row
+	new_lines = {
+		"time_sales_order_item": time_line if time_line and "docname" not in time_line else None,
+		"mileage_sales_order_item": mileage_line if mileage_line and "docname" not in mileage_line else None,
+	}
+	if mileage_line and "docname" in mileage_line:
+		doc.mileage_sales_order_item = mileage_line["docname"]
+	if time_line and "docname" in time_line:
+		doc.time_sales_order_item = time_line["docname"]
+
+	if any(new_lines.values()):
+		so.reload()
+		fresh_rows = [row for row in so.items if row.name not in names_before]
+		for fieldname, line in new_lines.items():
+			if not line:
+				continue
+			match = next((row for row in fresh_rows if row.item_code == line["item_code"]), None)
+			if match:
+				doc.set(fieldname, match.name)
+				fresh_rows.remove(match)
+
+
+def _fallback_warehouse(so, item_code):
+	"""Lager fuer eine neue Auftragszeile: Standardlager des Artikels bzw. der
+	Artikelgruppe, sonst das Lager des Auftrags (set_warehouse oder einer
+	vorhandenen Zeile), sonst Stock Settings, sonst irgendein Blattlager der
+	Firma. None, wenn es gar keins gibt - dann meldet ERPNext selbst den
+	fehlenden Wert."""
+	from erpnext.stock.get_item_details import get_item_defaults, get_item_group_defaults
+
+	return (
+		get_item_defaults(item_code, so.company).get("default_warehouse")
+		or get_item_group_defaults(item_code, so.company).get("default_warehouse")
+		or so.get("set_warehouse")
+		or next((row.warehouse for row in so.items if row.warehouse), None)
+		or frappe.db.get_single_value("Stock Settings", "default_warehouse")
+		or frappe.db.get_value("Warehouse", {"company": so.company, "is_group": 0, "disabled": 0}, "name")
+	)
+
+
+def _get_time_line(doc, segments, so):
+	"""Zeit-Position (Dienstleistungsartikel der Aktivitaetsart x Stunden) fuer
+	den verknuepften Auftrag, oder None, wenn nichts zu tun ist:
+	- Aktivitaetsart ohne Dienstleistungsartikel: keine Zeit-Position (bei einem
+	  vom Techniker gewaehlten Auftrag war das schon immer erlaubt - nur beim
+	  automatisch angelegten Auftrag ist der Artikel Pflicht, siehe
+	  _get_time_item)
+	- vorhandene Zeile mit unveraenderter Menge: nichts zu aktualisieren
+	Sonst ein Dict mit "docname" (Menge der bestehenden Zeile aktualisieren)
+	oder ohne (neue Zeile anhaengen)."""
+	from frappe.utils import flt
+
+	if not frappe.get_cached_doc("Activity Type", doc.activity_type).custom_dienstleistungsartikel:
+		return None
+
+	line = _get_time_item(doc, segments)
+	existing = next((row for row in so.items if row.name == doc.time_sales_order_item), None)
+	if existing and existing.item_code == line["item_code"]:
+		if flt(existing.qty) == flt(line["qty"]):
+			return None
+		return {**line, "docname": existing.name}
+	return line
 
 
 def _mileage_billable(doc):
@@ -461,6 +537,9 @@ def _create_sales_order(doc, segments):
 		so.insert()
 
 	doc.sales_order = so.name
+	# Zeit-Position ist die erste Zeile (siehe oben) - Name merken, damit
+	# _sync_sales_order() sie bei geaenderter Zeit aktualisiert.
+	doc.time_sales_order_item = so.items[0].name
 	for row in pending:
 		row.added_to_order = 1
 

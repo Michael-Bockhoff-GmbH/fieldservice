@@ -50,6 +50,7 @@
   "section_break_verknuepfung",
   "timesheet",
   "mileage_sales_order_item",
+  "time_sales_order_item",
   "amended_from"
  ],
  "fields": [
@@ -213,7 +214,8 @@
    "description": "Free-text address, no Address record required - search-as-you-type via OpenStreetMap. Overrides the default mileage start point (Site Visit Settings, or the Company's default address) for this visit only.",
    "fieldname": "start_address",
    "fieldtype": "Autocomplete",
-   "label": "Start Address"
+   "label": "Start Address",
+   "length": 500
   },
   {
    "default": "0",
@@ -228,7 +230,8 @@
    "description": "Free-text address, no Address record required. Overrides the customer's default address on file for this visit only - e.g. a remote office or a different site of the customer.",
    "fieldname": "customer_address_override",
    "fieldtype": "Autocomplete",
-   "label": "Customer Site Address"
+   "label": "Customer Site Address",
+   "length": 500
   },
   {
    "fieldname": "column_break_remote",
@@ -338,6 +341,16 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Mileage Sales Order Item",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "description": "Row name of the service-time line in the linked Sales Order - internal bookkeeping so re-syncing updates it instead of duplicating it.",
+   "fieldname": "time_sales_order_item",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Time Sales Order Item",
    "no_copy": 1,
    "print_hide": 1,
    "read_only": 1
