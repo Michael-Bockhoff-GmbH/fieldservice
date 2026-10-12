@@ -44,25 +44,36 @@ def before_submit(doc, method=None):
 	opened it" entsteht (gleiche Begruendung wie
 	fieldservice.zeit_projekt.sales_order.before_submit).
 
-	project/activity_type/sales_order/from_time/to_time sind
-	absichtlich nicht mehr reqd (customer ist dagegen wieder Pflicht, auch fuer Entwuerfe) (from_time: reine Vorausplanung per
-	scheduled_start/scheduled_end braucht keine Ist-Zeit) im Feld (siehe site_visit.json) - ein Entwurf mit nur laufendem
-	Timer (from_time gesetzt, "Start Timer" speichert sofort, siehe
-	site_visit.js) waere sonst gar nicht speicherbar. Deshalb hier explizit
-	vor dem Buchen geprueft. Statt eines vorhandenen Auftrags reicht auch
-	die angehakte "Create Sales Order" - siehe _create_sales_order unten,
-	die den Auftrag dann an dieser Stelle automatisch anlegt."""
+	activity_type/from_time/to_time sind absichtlich nicht reqd im Feld (siehe
+	site_visit.json): ein Entwurf mit nur laufendem Timer (from_time gesetzt,
+	"Start Timer" speichert sofort, siehe site_visit.js) oder eine reine
+	Vorausplanung (scheduled_start/scheduled_end) waere sonst gar nicht
+	speicherbar. Deshalb hier explizit vor dem Buchen geprueft. customer ist
+	dagegen auch fuer Entwuerfe Pflicht.
+
+	Projekt und Auftrag sind beim Buchen optional: wer die Zeit zuerst erfasst
+	und erst danach zuordnen will, bucht ohne beides - das Timesheet entsteht
+	dann ohne Auftrag/Projekt und wird spaeter ueber die Seite "Time
+	Assignment" (time_assignment.py) einem Auftrag zugeordnet. Ist ein
+	Projekt gewaehlt, braucht es dagegen weiterhin einen Auftrag (vorhanden
+	oder per "Create Sales Order" automatisch angelegt, siehe
+	_create_sales_order). Zusatzartikel und Kilometer lassen sich nur ueber
+	einen Auftrag abrechnen und brauchen ihn daher immer."""
 	if doc.timesheet and _linked_timesheet_is_submitted(doc.timesheet):
 		return
 
 	if not doc.customer:
 		frappe.throw(_("Please select a Customer before submitting."))
-	if not doc.project:
-		frappe.throw(_("Please select a Project before submitting."))
 	if not doc.activity_type:
 		frappe.throw(_("Please select an Activity Type before submitting."))
-	if not doc.sales_order and not doc.create_sales_order:
+
+	has_order = bool(doc.sales_order or doc.create_sales_order)
+	if doc.project and not has_order:
 		frappe.throw(_('Please select a Sales Order, or check "Create Sales Order", before submitting.'))
+	if not has_order and ([row for row in doc.extra_items if not row.added_to_order] or _mileage_billable(doc)):
+		frappe.throw(
+			_("Additional items and mileage can only be billed through a Sales Order - please select one first.")
+		)
 	if not doc.from_time:
 		frappe.throw(_("Please enter a start time before submitting."))
 	if not doc.to_time:
@@ -75,7 +86,7 @@ def before_submit(doc, method=None):
 
 	segments = _get_work_segments(doc)
 
-	if not doc.sales_order:
+	if not doc.sales_order and doc.create_sales_order:
 		_create_sales_order(doc, segments)
 
 	ts = frappe.get_doc(
@@ -117,7 +128,8 @@ def before_submit(doc, method=None):
 		alert=True,
 	)
 
-	_sync_sales_order(doc, segments)
+	if doc.sales_order:
+		_sync_sales_order(doc, segments)
 
 
 def _validate_signature(doc):

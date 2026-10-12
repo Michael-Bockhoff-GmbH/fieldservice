@@ -13,9 +13,11 @@ gemeinsame App (`fieldservice`). Drei Funktionen:
 3. **Projekt aus Auftrag** – Haken im Auftrag, der beim Bestätigen
    automatisch ein Projekt anlegt und verknüpft.
 
-Ein **Auftrag** ist bei Site Visit Pflicht, da darüber abgerechnet wird –
+Ein **Auftrag** ist bei Site Visit Pflicht, sobald ein Projekt gewählt ist –
 gibt es noch keinen, lässt er sich direkt aus dem Site Visit heraus anlegen
-(siehe "Auftrag" unten). Die beiden ursprünglichen Apps arbeiten lose über
+(siehe "Auftrag" unten). Wer die Zeit zuerst erfassen und später zuordnen
+will, bucht ohne Projekt und Auftrag und ordnet danach über die
+**Zeitzuordnung** zu (siehe dort). Die beiden ursprünglichen Apps arbeiten lose über
 Kern-Doctypes zusammen (Activity Type, Timesheet) – aus diesem
 Zusammenspiel heraus kam der Wunsch, sie als eine App auszuliefern.
 
@@ -275,11 +277,15 @@ entfernt beim Deinstallieren exakt diese vier Einträge wieder (identifiziert
 
 ## Auftrag
 
-`project` ist ebenfalls Pflicht (wie `activity_type`/`sales_order`
-erst beim Buchen selbst geprüft, nicht auf Feldebene – sonst wäre ein
-Entwurf mit nur laufendem Timer nicht speicherbar, siehe "Timer" unten).
+`activity_type` wird erst beim Buchen selbst geprüft, nicht auf Feldebene –
+sonst wäre ein Entwurf mit nur laufendem Timer nicht speicherbar, siehe
+"Timer" unten. **Projekt und Auftrag sind beim Buchen optional:** ohne beides
+entsteht ein Timesheet ohne Auftrag/Projekt, das über die Zeitzuordnung
+später einem Auftrag zugewiesen wird. Ist ein Projekt gewählt, braucht es
+weiterhin einen Auftrag; Zusatzartikel und Kilometer brauchen immer einen
+Auftrag (sonst gibt es nichts, worüber sie abgerechnet werden).
 
-Jeder Einsatz muss einem Auftrag zugeordnet sein, da darüber (und über das
+Ein Einsatz mit Projekt muss einem Auftrag zugeordnet sein, da darüber (und über das
 automatisch erzeugte Timesheet) abgerechnet wird – entweder ein bereits
 bestehender (Feld `sales_order`), oder ein neuer, automatisch beim Buchen
 angelegter. Gibt es noch keinen passenden Auftrag, **"Create Sales

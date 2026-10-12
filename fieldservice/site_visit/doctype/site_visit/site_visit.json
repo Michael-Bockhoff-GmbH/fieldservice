@@ -81,7 +81,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Must be set before submitting - not required yet when saving as a draft (e.g. via the timer).",
+   "description": "Optional - time can also be booked without a Project and assigned later (see Time Assignment). With a Project, a Sales Order is required.",
    "fieldname": "project",
    "fieldtype": "Link",
    "label": "Project",
@@ -89,7 +89,7 @@
   },
   {
    "depends_on": "eval:!doc.create_sales_order",
-   "description": "Must be set before submitting - not required yet when saving as a draft (e.g. via the timer). If there isn't one yet, check \"Create Sales Order\" below instead of picking one here.",
+   "description": "Optional - time can also be booked without a Sales Order and assigned later (see Time Assignment). If there isn't one yet, check \"Create Sales Order\" below instead of picking one here.",
    "fieldname": "sales_order",
    "fieldtype": "Link",
    "label": "Sales Order",

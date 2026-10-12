@@ -166,3 +166,6 @@
 "Sales Order {0} is not open.","Auftrag {0} ist nicht offen."
 "Timesheet {0} is cancelled.","Zeitblatt {0} ist storniert."
 "Time entry in {0} was already invoiced on {1}.","Zeiteintrag in {0} wurde bereits mit {1} abgerechnet."
+"Additional items and mileage can only be billed through a Sales Order - please select one first.","Zusatzartikel und Kilometer lassen sich nur über einen Auftrag abrechnen - bitte zuerst einen Auftrag auswählen."
+"Optional - time can also be booked without a Project and assigned later (see Time Assignment). With a Project, a Sales Order is required.","Optional - die Zeit lässt sich auch ohne Projekt buchen und später zuordnen (siehe Time Assignment). Mit Projekt ist ein Auftrag Pflicht."
+"Optional - time can also be booked without a Sales Order and assigned later (see Time Assignment). If there isn't one yet, check ""Create Sales Order"" below instead of picking one here.","Optional - die Zeit lässt sich auch ohne Auftrag buchen und später zuordnen (siehe Time Assignment). Gibt es noch keinen, unten ""Create Sales Order"" ankreuzen, statt hier einen auszuwählen."
