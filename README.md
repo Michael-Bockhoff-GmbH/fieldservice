@@ -853,13 +853,15 @@ erfassen, danach zuordnen.
 
 - Links: nicht zugeordnete Zeiteinträge (Timesheet Detail ohne Auftrag, nicht
   fakturiert) im gewählten Zeitraum, filterbar nach Kunde/Projekt.
-- Rechts: offene Aufträge als Ablageziele (mit den schon zugeordneten Stunden)
-  und das Ziel **Nicht abrechenbar**.
+- Rechts: offene Aufträge als Ablageziele (mit den schon zugeordneten Stunden).
+  Der Haken **Nicht abrechenbar** in der Kopfzeile gilt für alles, was gerade
+  auf einen Auftrag gezogen wird: die Zeit wird dem Auftrag zugeordnet, aber
+  nicht abgerechnet.
 - Karte anklicken wählt sie (mehrere möglich), Ziehen legt die gewählten
   Karten auf ein Ziel. Auf einen **Auftrag** gezogen: der Eintrag bekommt
-  `custom_sales_order`, das Projekt des Auftrags und ist abrechenbar. Auf
-  **Nicht abrechenbar**: `is_billable = 0`. Zurück in die linke Liste
-  gezogen: Zuordnung aufgehoben.
+  `custom_sales_order` und das Projekt des Auftrags; `is_billable` ist 1, bei
+  gesetztem Haken 0. Zurück in die linke Liste gezogen: Zuordnung
+  aufgehoben.
 - Das sind dieselben Felder, nach denen der Zeitimport in der Rechnung
   filtert (siehe "Filtern nach Auftrag"); fakturierte Einträge lassen sich
   nicht ändern. Bei gebuchten Zeitblättern werden Summen von Zeitblatt und

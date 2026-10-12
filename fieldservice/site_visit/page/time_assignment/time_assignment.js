@@ -6,8 +6,10 @@
 //
 // Bedienung: Karte anklicken waehlt sie (mehrfach moeglich), ziehen legt die
 // gewaehlten Karten auf ein Ziel. Wird eine nicht gewaehlte Karte gezogen,
-// zaehlt nur diese eine. Ziele: ein Auftrag (zuordnen), "Nicht abrechenbar",
-// oder die Liste links (Zuordnung aufheben).
+// zaehlt nur diese eine. Ziele: ein Auftrag (zuordnen) oder die Liste links
+// (Zuordnung aufheben). Der Haken "Nicht abrechenbar" in der Kopfzeile gilt
+// fuer alles, was gerade auf einen Auftrag gezogen wird: die Zeit wird dem
+// Auftrag zugeordnet, aber nicht abgerechnet.
 
 frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
@@ -21,6 +23,7 @@ frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 		to_date: frappe.datetime.get_today(),
 		customer: null,
 		project: null,
+		not_billable: 0,
 		selected: new Set(),
 		data: { entries: [], orders: [], assigned: [] },
 	};
@@ -30,6 +33,15 @@ frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 	const to_field = make_field({ fieldname: 'to_date', label: __('To Date'), fieldtype: 'Date', default: state.to_date });
 	const customer_field = make_field({ fieldname: 'customer', label: __('Customer'), fieldtype: 'Link', options: 'Customer' });
 	const project_field = make_field({ fieldname: 'project', label: __('Project'), fieldtype: 'Link', options: 'Project' });
+	// Gilt fuer die naechsten Zuordnungen, loest selbst kein Neuladen aus
+	const not_billable_field = page.add_field({
+		fieldname: 'not_billable',
+		label: __('Not billable'),
+		fieldtype: 'Check',
+		change() {
+			state.not_billable = cint(not_billable_field.get_value());
+		},
+	});
 	page.__fields = { from_field, to_field, customer_field, project_field };
 
 	page.add_inner_button(__('Refresh'), () => reload(page, state));
@@ -42,7 +54,6 @@ frappe.pages['time-assignment'].on_page_load = function (wrapper) {
 			</div>
 			<div class="ta-column ta-targets">
 				<div class="ta-heading">${__('Drop on a Sales Order')}</div>
-				<div class="ta-drop ta-nonbillable" data-drop="nonbillable">${__('Not billable')}</div>
 				<div class="ta-list ta-orders"></div>
 			</div>
 		</div>`);
@@ -165,8 +176,10 @@ function wire_dnd(page, state, $root) {
 		if (!names.length) return;
 
 		const args = { entries: names };
-		if (kind === 'order') args.sales_order = $(this).data('order');
-		else if (kind === 'nonbillable') args.billable = 0;
+		if (kind === 'order') {
+			args.sales_order = $(this).data('order');
+			args.billable = state.not_billable ? 0 : 1;
+		}
 
 		frappe.call({
 			method: 'fieldservice.site_visit.time_assignment.assign_entries',
